@@ -77,7 +77,35 @@ $stmt->close();
     .nav-icons button:hover { transform:translateY(-2px); background:rgba(255,255,255,0.4);}
     .nav-icons svg { width:22px; height:22px; fill:white; transition:transform .3s; }
     .nav-icons button:hover svg{ transform:scale(1.1); }
-
+    .auth-buttons {
+      display: flex;
+      gap: 12px;
+    }
+    .auth-btn {
+      padding: 10px 25px;
+      background: linear-gradient(135deg, var(--btn-grad-start), var(--btn-grad-end));
+      border: none;
+      border-radius: 50px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      font-weight: bold;
+      cursor: pointer;
+      color: var(--btn-text);
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 1rem;
+      text-align: center;
+    }
+    .auth-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+    }
+    .register-btn {
+      background: rgba(255,255,255,0.3);
+      color: var(--text-color);
+    }
+    .register-btn:hover {
+      background: rgba(255,255,255,0.4);
+    }
     #user-info {
       display:flex; align-items:center; gap:10px;
       background: rgba(255,255,255,0.7); color:#333;
