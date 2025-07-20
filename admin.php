@@ -16,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 $mysqli = require __DIR__ . '/database.php';
-// Obținere date utilizator (inclusiv profile_pic, theme)
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT Numereal, Prenume, Nume, email, profile_pic,age
         FROM registration
@@ -36,7 +35,6 @@ $stmt->close();
   <title>Admin Chestionar</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* Variabile și stiluri comune */
     :root {
       --gradient-1: #4e54c8;
       --gradient-2: #8f94fb;
@@ -73,7 +71,6 @@ $stmt->close();
       margin: 0 auto;
     }
     
-    /* Header */
     header {
       display: flex;
       align-items: center;
@@ -123,7 +120,6 @@ $stmt->close();
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
     
-    /* Conținut principal */
     .content {
       display: flex;
       flex-direction: column;
@@ -160,7 +156,6 @@ $stmt->close();
       margin-bottom: 25px;
     }
     
-    /* Form styling */
     .form-container {
       background: var(--form-bg);
       border-radius: 16px;
@@ -215,7 +210,6 @@ $stmt->close();
       padding-right: 45px;
     }
     
-    /* Butoane */
     .btn {
       padding: 15px 30px;
       background: linear-gradient(135deg, var(--btn-grad-start), var(--btn-grad-end));
@@ -252,7 +246,6 @@ $stmt->close();
       margin-top: 30px;
     }
     
-    /* Message styling */
     .message {
       padding: 15px;
       border-radius: 10px;
@@ -264,7 +257,6 @@ $stmt->close();
       animation: fadeIn 0.5s;
     }
     
-    /* Butoane flotante */
     .floating-controls {
       position: fixed;
       bottom: 25px;
@@ -324,7 +316,7 @@ $stmt->close();
       color:var(--btn-text); box-shadow:0 3px 8px rgba(0,0,0,0.15);
     }
     .lang-btn:hover:not(.active) { background:rgba(255,255,255,0.15); }
-    /* Animations */
+
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
@@ -351,8 +343,7 @@ $stmt->close();
         transform: translateY(0);
       }
     }
-    
-    /* Responsive */
+ 
     @media (max-width: 768px) {
       header {
         padding: 12px 20px;
@@ -457,7 +448,6 @@ $stmt->close();
     </div>
   </div>
   
-  <!-- Butoane flotante -->
   <button id="theme-btn">🎨</button>
   <div id="theme-selector">
     <button data-g1="#4e54c8" data-g2="#8f94fb" data-b1="#a1ffce" data-b2="#faffd1">Blue</button>
@@ -472,10 +462,9 @@ $stmt->close();
 
     if (link) {
       link.addEventListener('click', e => {
-        e.preventDefault();            // oprește navigarea
-        flash.style.display = 'block'; // afișează mesajul
+        e.preventDefault();           
+        flash.style.display = 'block'; 
 
-        // după 3 secunde, ascunde mesajul
         setTimeout(() => {
           flash.style.display = 'none';
         }, 3000);
@@ -483,7 +472,7 @@ $stmt->close();
     }
   });
     document.addEventListener('DOMContentLoaded', function() {
-      // Funcționalitate pentru teme
+    
       const themeBtn = document.getElementById('theme-btn');
       const themeSelector = document.getElementById('theme-selector');
       
@@ -508,7 +497,6 @@ $stmt->close();
         });
       });
       
-      // Funcționalitate pentru limbi
       const langBtn = document.getElementById('lang-btn');
       let currentLang = 'ro';
       
@@ -519,7 +507,6 @@ $stmt->close();
       });
       
       
-      // Adaugă keyframes pentru fadeOut dacă nu există
       const styleEl = document.createElement('style');
       styleEl.textContent = `
         @keyframes fadeOut {
@@ -529,7 +516,6 @@ $stmt->close();
       `;
       document.head.appendChild(styleEl);
       
-      // Adaugă animație la încărcarea paginii
       document.body.style.opacity = 0;
       setTimeout(() => {
         document.body.style.transition = 'opacity 0.5s ease-in';
