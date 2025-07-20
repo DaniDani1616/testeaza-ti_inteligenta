@@ -5,8 +5,6 @@ if (empty($_SESSION['user_id'])) {
     exit;
 }
 $mysqli = require __DIR__ . '/database.php';
-
-// 1) Preluăm datele curente
 $user_id = $_SESSION['user_id'];
 $stmt = $mysqli->prepare("
     SELECT Numereal, Prenume, Nume, email, profile_pic,age
@@ -26,12 +24,10 @@ if($user['age']=="15-17")
   $X="15-17";
 if($user['age']=="18+")
   $X="18+";
-// 3) Procesăm formularul
 $errors = [];
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // a) Colectăm & validăm câmpurile vechi
     $real    = trim($_POST['Numereal']   ?? '');
     $prenume = trim($_POST['Prenume']    ?? '');
     $nume    = trim($_POST['Nume']       ?? '');
@@ -51,8 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($themes[$theme])) {
         $errors[] = 'Tema selectată este invalidă.';
     }
-
-    // b) Parolă nouă (opțional)
     $newHash = null;
     if ($pass !== '') {
         if (strlen($pass) < 8) {
@@ -69,8 +63,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $newHash = password_hash($pass, PASSWORD_DEFAULT);
         }
     }
-
-    // c) Verificăm duplicate (username/email)
     function checkDup($mysqli, $col, $val, $selfId) {
         $st = $mysqli->prepare("SELECT 1 FROM registration WHERE `$col` = ? AND id <> ? LIMIT 1");
         $st->bind_param('si', $val, $selfId);
@@ -89,7 +81,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // d) Upload imagine profil și cover
     $profilePath = $user['profile_pic'];
     if (isset($_FILES['profile_pic']) && $_FILES['profile_pic']['error'] === UPLOAD_ERR_OK) {
         $ext = pathinfo($_FILES['profile_pic']['name'], PATHINFO_EXTENSION);
@@ -100,21 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Eroare la upload-ul pozei de profil.';
         }
     }
-    $coverPath = $user['cover_pic'];
-    if (isset($_FILES['cover_pic']) && $_FILES['cover_pic']['error'] === UPLOAD_ERR_OK) {
-        $ext = pathinfo($_FILES['cover_pic']['name'], PATHINFO_EXTENSION);
-        $target = "uploads/cover/{$user_id}." . $ext;
-        if (move_uploaded_file($_FILES['cover_pic']['tmp_name'], $target)) {
-            $coverPath = $target;
-        } else {
-            $errors[] = 'Eroare la upload-ul pozei de fundal.';
-        }
-    }
 
-    // e) Dacă nu sunt erori, actualizăm
     if (empty($errors)) {
-        $fields = "Numereal = ?, Prenume = ?, Nume = ?, email = ?, profile_pic = ?, cover_pic = ?, theme = ?";
-        $types  = "sssssss";
+        $fields = "Numereal = ?, Prenume = ?, Nume = ?, email = ?, profile_pic = ?";
+        $types  = "sssss";
         $params = [$real, $prenume, $nume, $email, $profilePath, $coverPath, $theme];
 
         if ($newHash) {
@@ -131,7 +111,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($upd->execute()) {
             $success = 'Profilul a fost actualizat cu succes.';
-            // Reîmprospătăm datele
             $user = [
                 'Numereal'   => $real,
                 'Prenume'    => $prenume,
@@ -645,7 +624,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <button data-g1="#fc4a1a" data-g2="#f7b733" data-b1="#ff9d00" data-b2="#ffcc70">Gold</button>
   </div>
   <script>
-    // Flash
     (function(){
       const msg = document.getElementById('flash-message');
       if (!msg) return;
@@ -658,10 +636,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (link) {
       link.addEventListener('click', e => {
-        e.preventDefault();            // oprește navigarea
-        flash.style.display = 'block'; // afișează mesajul
+        e.preventDefault();            
+        flash.style.display = 'block'; 
 
-        // după 3 secunde, ascunde mesajul
         setTimeout(() => {
           flash.style.display = 'none';
         }, 3000);
@@ -674,17 +651,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (link) {
       link.addEventListener('click', e => {
-        e.preventDefault();            // oprește navigarea
-        flash.style.display = 'block'; // afișează mesajul
+        e.preventDefault();           
+        flash.style.display = 'block'; 
 
-        // după 3 secunde, ascunde mesajul
         setTimeout(() => {
           flash.style.display = 'none';
         }, 3000);
       });
     }
   });
-    // Theme selector
     const themeBtn = document.getElementById('theme-btn'),
           themeSel = document.getElementById('theme-selector');
     themeBtn.addEventListener('click', ()=> themeSel.style.display = themeSel.style.display==='block'?'none':'block');
@@ -701,7 +676,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       if (!themeSel.contains(e.target)&&e.target!==themeBtn) themeSel.style.display='none';
     });
 
-    // Theme options
     document.querySelectorAll('.theme-option').forEach(option => {
       option.addEventListener('click', () => {
         document.querySelectorAll('.theme-option').forEach(opt => opt.classList.remove('active'));
@@ -710,7 +684,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       });
     });
 
-    // Language toggle
     document.querySelectorAll('.lang-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));
@@ -718,7 +691,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       });
     });
 
-     // Mobile menu
      const mobileBtn = document.getElementById('mobileMenuBtn'),
           sidebar = document.getElementById('sidebar');
     mobileBtn.addEventListener('click', () => sidebar.classList.toggle('active'));
@@ -730,14 +702,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     });
 
-    // Submenu Tests
     const testsSubmenu = document.getElementById('tests-submenu');
     testsSubmenu.querySelector('.main-test-link').addEventListener('click', e=>{
       e.preventDefault();
       testsSubmenu.classList.toggle('active');
     });
 
-    // Form labels
     document.querySelectorAll('.form-control').forEach(input => {
       if (input.value) {
         const lbl = input.nextElementSibling;
