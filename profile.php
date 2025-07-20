@@ -34,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email   = trim($_POST['email']      ?? '');
     $pass    = $_POST['Parola']         ?? '';
     $pass2   = $_POST['CParola']        ?? '';
-    $theme   = $_POST['theme']          ?? 'default';
 
     if ($real === '')    { $errors[] = 'Trebuie să completezi numele real.'; }
     if ($prenume === '') { $errors[] = 'Trebuie să completezi prenumele.'; }
@@ -43,9 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Email invalid.';
-    }
-    if (!isset($themes[$theme])) {
-        $errors[] = 'Tema selectată este invalidă.';
     }
     $newHash = null;
     if ($pass !== '') {
@@ -95,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         $fields = "Numereal = ?, Prenume = ?, Nume = ?, email = ?, profile_pic = ?";
         $types  = "sssss";
-        $params = [$real, $prenume, $nume, $email, $profilePath, $coverPath, $theme];
+        $params = [$real, $prenume, $nume, $email, $profilePath];
 
         if ($newHash) {
             $fields .= ", password_hash = ?";
@@ -116,9 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'Prenume'    => $prenume,
                 'Nume'       => $nume,
                 'email'      => $email,
-                'profile_pic'=> $profilePath,
-                'cover_pic'  => $coverPath,
-                'theme'      => $theme
+                'profile_pic'=> $profilePath
             ];
         } else {
             $errors[] = 'Eroare la salvare: ' . $mysqli->error;
