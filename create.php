@@ -1,24 +1,24 @@
 <?php
 session_start();
 
-// only run when form is submitted
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // collect and validate POST inputs
+  
     $titlu = trim($_POST['titlu'] ?? '');
     $nr    = trim($_POST['nrintrebari'] ?? '');
     $timp  = trim($_POST['timpacordat'] ?? '');
     $tip   = trim($_POST['tip'] ?? '');
     $age   = trim($_POST['age'] ?? '');
 
-    // basic server‑side validation
+ 
     if ($titlu === '' || $nr === '' || $timp === '' || $tip === '' || $age === '') {
         $_SESSION['flash_error'] = 'Toate câmpurile sunt obligatorii.';
         header('Location: create.php');
         exit;
     }
 
-    // connect
+   
     $mysqli = require __DIR__ . '/database2.php';
     if ($mysqli->connect_errno) {
         die('Conexiune BD eșuată: ' . $mysqli->connect_error);
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
-// if not POST, just show the form below
+
 ?>
 <!DOCTYPE html>
 <html lang="ro">
