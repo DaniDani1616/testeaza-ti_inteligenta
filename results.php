@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Verificăm dacă rezultatele există
 if (!isset($_SESSION['test_results'])) {
     header('Location: index.php');
     exit;
@@ -12,7 +11,6 @@ $message = $testResults['message'];
 $results = $testResults['results'];
 $dominantTypes = $testResults['dominantTypes'];
 
-// Informații despre tipuri
 $typeInfo = [
     'M' => [
         'title' => 'Mizantropul',
@@ -203,7 +201,6 @@ $typeInfo = [
     <button data-g1="#fc4a1a" data-g2="#f7b733" data-b1="#ff9d00" data-b2="#ffcc70">Auriu</button>
   </div>
   <script>
-  // Theme functionality
   const selector = document.getElementById('theme-selector');
     document.getElementById('theme-btn').addEventListener('click', () => {
       selector.style.display = selector.style.display === 'block' ? 'none' : 'block';
