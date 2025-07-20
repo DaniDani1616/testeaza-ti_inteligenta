@@ -6,9 +6,7 @@ $is_logged_in = false;
 
 if(isset($_SESSION['user_id'])) {
     $is_logged_in = true;
-// Conectare la baza de date
 $mysqli = require __DIR__ . '/database.php';
-// Obținere date utilizator (inclusiv profile_pic, theme)
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT Numereal, Prenume, Nume, email, profile_pic,age
       FROM registration
@@ -488,7 +486,6 @@ $stmt->close();
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Theme selector
     const themeBtn = document.getElementById('theme-btn');
     const themeSel = document.getElementById('theme-selector');
     
@@ -513,17 +510,14 @@ $stmt->close();
       }
     });
       
-      // FAQ accordion functionality
       const faqQuestions = document.querySelectorAll('.faq-question');
       faqQuestions.forEach(question => {
         question.addEventListener('click', () => {
           const answer = question.nextElementSibling;
           const icon = question.querySelector('i');
           
-          // Toggle answer visibility
           answer.classList.toggle('show');
           
-          // Toggle icon
           if (answer.classList.contains('show')) {
             icon.classList.remove('fa-chevron-down');
             icon.classList.add('fa-chevron-up');
@@ -534,7 +528,6 @@ $stmt->close();
         });
       });
       
-      // Card hover effect enhancement
       const cards = document.querySelectorAll('.card');
       cards.forEach(card => {
         card.addEventListener('mouseenter', () => {
