@@ -1,5 +1,4 @@
 <?php
-// reset_password.php
 session_start();
 
 if (isset($_SESSION['user_id'])) {
@@ -267,8 +266,6 @@ if (!$error && $_SERVER['REQUEST_METHOD'] === 'POST') {
   </style>
 </head>
 <body>
-
-  <!-- Temă -->
   <button id="theme-btn" title="Schimbă tema">🎨</button>
   <div id="theme-selector">
     <button data-g1="#4e54c8" data-g2="#8f94fb" data-b1="#a1ffce" data-b2="#faffd1">Albastru</button>
@@ -304,14 +301,12 @@ if (!$error && $_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script>
-  // Flash message animation
   const flash = document.getElementById('flash-message');
   if (flash) {
     requestAnimationFrame(()=>flash.classList.add('show'));
     setTimeout(()=>flash.classList.remove('show'), 3000);
   }
 
-  // Password toggle functionality
   document.getElementById('toggle-password1').addEventListener('click', function() {
     togglePasswordVisibility('password');
   });
@@ -326,7 +321,6 @@ if (!$error && $_SERVER['REQUEST_METHOD'] === 'POST') {
     passwordField.setAttribute('type', type);
   }
   
-  // Translations for reset password page
   const translations = {
     ro: {
       resetTitle: "Resetează parola",
@@ -368,7 +362,6 @@ if (!$error && $_SERVER['REQUEST_METHOD'] === 'POST') {
   
   updateLang();
 
-  // Theme toggle
   const themeBtn = document.getElementById('theme-btn');
   const themeSelector = document.getElementById('theme-selector');
   
