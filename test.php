@@ -1,15 +1,12 @@
 <?php
-// chestionar.php
 session_start();
 require 'config.php';
 
-// dacă nu e autentificat, duce la login
 if (!isset($_SESSION['user_id']) && !isset($_GET['share'])) {
   header('Location: login.php');
   exit;
 }
 $mysqli = require __DIR__ . '/database.php';
-// Dacă accesăm prin link partajat
 if (isset($_GET['share'])) {
   $shareId = $_GET['share'];
   $stmt = $mysqli->prepare("SELECT user_id FROM share_links WHERE share_id = ?");
@@ -26,10 +23,8 @@ if (isset($_GET['share'])) {
   $stmt->close();
 }
 
-// preluăm lista de întrebări
 $qs = $pdo->query("SELECT id, text, category FROM questions ORDER BY id")->fetchAll();
 $mysqli = require __DIR__ . '/database.php';
-// Obținere date utilizator (inclusiv profile_pic, theme)
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT Numereal, Prenume, Nume, email, profile_pic,age
         FROM registration
@@ -390,28 +385,23 @@ $stmt->close();
         radio.parentNode.classList.add('selected');
       });
     });
-    // 1) selectăm elementele
     const infoBtn    = document.getElementById('infoBtn');
     const infoModal  = document.getElementById('infoModal');
     const closeModal = infoModal.querySelector('.close-modal');
 
-    // 2) când dai click pe butonul „i”
     infoBtn.addEventListener('click', () => {
       infoModal.style.display = 'flex';
     });
 
-    // 3) când dai click pe X
     closeModal.addEventListener('click', () => {
       infoModal.style.display = 'none';
     });
 
-    // 4) când dai click în afara conținutului modalului
     window.addEventListener('click', (e) => {
       if (e.target === infoModal) {
         infoModal.style.display = 'none';
       }
     });
-    // Theme selector
     const themeBtn = document.getElementById('theme-btn');
     const themeSel = document.getElementById('theme-selector');
     
@@ -435,7 +425,6 @@ $stmt->close();
         themeSel.style.display = 'none';
       }
     });
-    // Butonul de partajare
 const shareBtn = document.getElementById('shareBtn');
 const shareModal = document.getElementById('shareModal');
 const closeShareModal = shareModal.querySelector('.close-share-modal');
@@ -443,19 +432,15 @@ const copyBtn = document.getElementById('copyBtn');
 const shareLink = document.getElementById('shareLink');
 const copyStatus = document.getElementById('copyStatus');
 
-// Deschide modalul de partajare
 shareBtn.addEventListener('click', () => {
-  // Generează un ID unic pentru sesiunea de partajare
   const shareId = Math.random().toString(36).substr(2, 9);
   
-  // Salvează ID-ul în sesiune
   fetch('save_share_id.php', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ shareId: shareId, userId: <?= $user_id ?> })
   })
   .then(() => {
-    // Construiește link-ul
     const currentUrl = window.location.href.split('?')[0];
     const shareUrl = `${currentUrl}?share=${shareId}`;
     shareLink.value = shareUrl;
@@ -463,12 +448,10 @@ shareBtn.addEventListener('click', () => {
   });
 });
 
-// Închide modalul
 closeShareModal.addEventListener('click', () => {
   shareModal.style.display = 'none';
 });
 
-// Copiază link-ul
 copyBtn.addEventListener('click', () => {
   shareLink.select();
   document.execCommand('copy');
@@ -476,7 +459,6 @@ copyBtn.addEventListener('click', () => {
   setTimeout(() => copyStatus.style.display = 'none', 2000);
 });
 
-// Închide când se dă click în afara modalului
 window.addEventListener('click', (e) => {
   if (e.target === shareModal) shareModal.style.display = 'none';
 });
