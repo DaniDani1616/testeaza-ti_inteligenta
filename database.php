@@ -1,8 +1,8 @@
 <?php
-$host="localhost";
-$dbname="login_db";
-$Nume="root";
-$Parola=""; 
+$host="sql206.infinityfree.com";
+$dbname="if0_39518451_XXX";
+$Nume="if0_39518451";
+$Parola="Dani2008Fotbal"; 
 $mysqli=new mysqli(hostname:$host,
                     username:$Nume,
                     password:$Parola,
