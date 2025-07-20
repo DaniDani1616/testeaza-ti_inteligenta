@@ -1,5 +1,5 @@
 <?php
-// Conexiune PDO la MySQL
+
 $host = 'localhost';
 $db   = 'creare_teste';
 $user = 'root';
@@ -14,7 +14,6 @@ $options = [
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (PDOException $e) {
-    // Afișează o eroare în mediu de dezvoltare
     die("Eroare conexiune DB: " . $e->getMessage());
 }
 ?>
