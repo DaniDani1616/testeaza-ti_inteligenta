@@ -1,9 +1,9 @@
 <?php
-
-$host = 'localhost';
-$db   = 'creare_teste';
-$user = 'root';
-$pass = '';
+// Conexiune PDO la MySQL
+$host = 'sql206.infinityfree.com';
+$db   = 'if0_39518451_creare_teste';
+$user = '	if0_39518451';
+$pass = 'Dani2008Fotbal';
 $charset = 'utf8mb4';
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $options = [
@@ -14,6 +14,7 @@ $options = [
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (PDOException $e) {
+    // Afișează o eroare în mediu de dezvoltare
     die("Eroare conexiune DB: " . $e->getMessage());
 }
 ?>
