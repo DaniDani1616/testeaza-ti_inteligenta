@@ -4,7 +4,11 @@ if (empty($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
 }
+
+// Conectare la baza de date
 $mysqli = require __DIR__ . '/database.php';
+
+// Obținere date utilizator (inclusiv profile_pic, theme)
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT Numereal, Prenume, Nume, email, profile_pic
         FROM registration
@@ -16,6 +20,7 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 $stmt->close();
 
+// Nume complet
 $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
 ?>
 <!DOCTYPE html>
@@ -62,6 +67,8 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       max-width: 1200px;
       margin: 0 auto;
     }
+    
+    /* Header */
     header {
       display: flex;
       align-items: center;
@@ -115,6 +122,8 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
     .nav-icons button:hover svg {
       transform: scale(1.1);
     }
+    
+    /* Conținut principal */
     .content {
       display: flex;
       flex-direction: column;
@@ -144,6 +153,8 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
     .question-container h2 i {
       color: var(--primary-accent);
     }
+    
+    /* Progress bar */
     .progress-container {
       width: 100%;
       background: rgba(255,255,255,0.3);
@@ -241,6 +252,8 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       font-weight: 600;
       font-size: 18px;
     }
+    
+    /* Răspuns text */
     .text-answer {
       width: 100%;
       margin-top: 20px;
@@ -253,6 +266,8 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       padding: 10px;
       font-size: 16px;
     }
+    
+    /* Timer display */
     .timer-display {
       position: absolute;
       top: 20px;
@@ -262,6 +277,8 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       padding: 5px 10px;
       border-radius: 8px;
     }
+    
+    /* Tablă de scris */
     .whiteboard-section {
       display: none;
       flex-direction: column;
@@ -340,6 +357,8 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       width: 100%;
       height: 100%;
     }
+    
+    /* Butoane de control */
     .controls {
       display: flex;
       justify-content: space-between;
@@ -386,6 +405,8 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       color: white;
       margin-top: 20px;
     }
+    
+    /* Butoane flotante */
     .floating-controls {
       position: fixed;
       bottom: 25px;
@@ -445,6 +466,8 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       transform: translateY(-3px);
       box-shadow: 0 3px 10px rgba(0,0,0,0.15);
     }
+    
+    /* Rezultate */
     .results-container {
       background: var(--card-bg);
       backdrop-filter: blur(12px);
@@ -455,6 +478,8 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       animation: slideUp 0.5s ease-out;
       text-align: center;
     }
+    
+    /* Modal styles */
     .modal {
       display: none;
       position: fixed;
@@ -529,6 +554,8 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       transform: translateY(-3px);
       box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
+    
+    /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
@@ -561,6 +588,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       }
     }
     
+    /* Responsive */
     @media (max-width: 768px) {
       header {
         padding: 12px 20px;
@@ -613,6 +641,8 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       #theme-selector {
         bottom: 150px;
       }
+      
+      /* Adjust dropdown position on mobile */
       .dropdown-menu {
         top: 75px;
         right: 10px;
@@ -692,6 +722,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
           </button>
         </div>
         
+        <!-- Buton pentru reluarea întrebărilor marcate -->
         <button class="btn btn-review" id="review-marked-btn" style="display: none; margin-top: 20px;">
           <i class="fas fa-redo"></i> Reia întrebările marcate
         </button>
@@ -699,6 +730,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
     </div>
   </div>
   
+  <!-- Modal pentru confirmare trecere peste întrebare -->
   <div id="skip-confirm-modal" class="modal">
     <div class="modal-content">
       <h3>Confirmă</h3>
@@ -711,6 +743,8 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       </div>
     </div>
   </div>
+  
+  <!-- Butoane flotante -->
   <div class="floating-controls">
     <button class="theme-btn" id="theme-btn">🎨</button>
   </div>
@@ -724,6 +758,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
   
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // Define questions array
       const questions = [
         {
           id: 1,
@@ -807,7 +842,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
             { value: 'D',  label: '6741' }
           ],
           sequenceImages: [
-            '8.jpeg'
+            '8.jpg'
           ],
           correctAnswer: 'C'
         },
@@ -916,7 +951,78 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       let isReviewMode = false;
       let originalQuestions = [...questions]; // Salvează întrebările originale
 
+      const translations = {
+        ro: { 
+          home: "Acasă", 
+          contact: "Contact", 
+          login: "Autentificare", 
+          question: "Întrebarea ", 
+          next: "Următorul", 
+          finish: "Finalizează testul", 
+          circle: "Cerc", 
+          square: "Pătrat", 
+          rhombus: "Romb", 
+          triangle: "Triunghi", 
+          whiteboard: "Tablă de Scris", 
+          drawHint: "Desenează pentru a rezolva problema", 
+          pen: "Pix", 
+          eraser: "Radieră", 
+          thickness: "Grosime:", 
+          clear: "Șterge tot", 
+          prev: "Înapoi", 
+          mark: "Marchează", 
+          unmark: "Detașează", 
+          timeUp: "Timp expirat!", 
+          results: "Rezultate", 
+          restart: "Reia quiz-ul", 
+          review: "Reia întrebările marcate",
+          confirmSkip: "Nu ai răspuns la întrebare. Ești sigur că vrei să treci mai departe?",
+          skipWarning: "Dacă o marchezi, o poți revizui mai târziu.",
+          skip: "Treci peste",
+          markSkip: "Marchează și treci peste",
+          cancel: "Anulează",
+          reviewMarked: "Reia întrebările marcate",
+          noMarked: "Nu ai nicio întrebare marcată!",
+          reviewMode: "Mod Revizuire",
+          reviewComplete: "Revizuire completă"
+        },
+        en: { 
+          home: "Home", 
+          contact: "Contact", 
+          login: "Login", 
+          question: "Question ", 
+          next: "Next", 
+          finish: "Finish test", 
+          circle: "Circle", 
+          square: "Square", 
+          rhombus: "Rhombus", 
+          triangle: "Triangle", 
+          whiteboard: "Whiteboard", 
+          drawHint: "Draw to solve the problem", 
+          pen: "Pen", 
+          eraser: "Eraser", 
+          thickness: "Thickness:", 
+          clear: "Clear All", 
+          prev: "Previous", 
+          mark: "Mark", 
+          unmark: "Unmark", 
+          timeUp: "Time's up!", 
+          results: "Results", 
+          restart: "Restart quiz", 
+          review: "Review marked questions",
+          confirmSkip: "You haven't answered the question. Are you sure you want to continue?",
+          skipWarning: "If you mark it, you can review it later.",
+          skip: "Skip",
+          markSkip: "Mark and Skip",
+          cancel: "Cancel",
+          reviewMarked: "Review marked questions",
+          noMarked: "You have no marked questions!",
+          reviewMode: "Review Mode",
+          reviewComplete: "Review Complete"
+        }
+      };
 
+      // Element references
       const qNumberEl = document.getElementById('question-number');
       const qPromptEl = document.getElementById('question-prompt');
       const seqContainer = document.getElementById('sequence-container');
@@ -937,6 +1043,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       const skipMessage = document.getElementById('skip-modal-message');
       const reviewMarkedBtn = document.getElementById('review-marked-btn');
 
+      // Timer functions
       function startTimer() {
         clearTimer();
         let timeLeft = timerDuration;
@@ -967,6 +1074,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
         goToNextQuestion();
       }
 
+      // Language update
       function updateLanguage() {
         const loginBtn = document.querySelector('.auth-btn');
         if(loginBtn) {
@@ -978,11 +1086,13 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
           registerBtn.textContent = translations[currentLang].register;
         }
         
+        // Update mark button
         const isMarked = markedQuestions.includes(questions[currentQuestionIndex].id);
         markBtn.innerHTML = `<i class="fas fa-flag"></i> ${
           isMarked ? translations[currentLang].unmark : translations[currentLang].mark
         }`;
         
+        // Next button text
         const total = questions.length;
         if (currentQuestionIndex === total - 1) {
           nextBtnText.textContent = isReviewMode ? 
@@ -992,11 +1102,14 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
           nextBtnText.textContent = translations[currentLang].next;
         }
       }
+      
+      // Render question
       function renderQuestion() {
         const q = questions[currentQuestionIndex];
         const total = questions.length;
         qNumberEl.textContent = q.id;
         
+        // Set special title for review mode
         const titlePrefix = isReviewMode ? 
           `<span style="color: #ff9d00;">${translations[currentLang].reviewMode}:</span> ` : 
           '';
@@ -1005,9 +1118,11 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
         
         qPromptEl.textContent = q.prompt;
         
+        // Progress bar
         const percent = ((currentQuestionIndex + 1) / total) * 100;
         progressBar.style.width = percent + '%';
         
+        // Sequence images
         seqContainer.innerHTML = '';
         if (q.sequenceImages) {
           q.sequenceImages.forEach(src => {
@@ -1021,6 +1136,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
           });
         }
         
+        // Response area
         respContainer.innerHTML = '';
         if (q.type === 'mcq' && q.options) {
           const optsDiv = document.createElement('div'); 
@@ -1030,6 +1146,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
             const optDiv = document.createElement('div'); 
             optDiv.dataset.value = opt.value;
             
+            // Check if it's a text-only option
             if (opt.img) {
               optDiv.classList.add('option');
               const shapeDiv = document.createElement('div'); 
@@ -1044,10 +1161,12 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
               p.textContent = `${opt.value}. ${opt.label}`;
               optDiv.appendChild(p);
             } else {
+              // Text-only option
               optDiv.classList.add('option', 'text-only');
               optDiv.textContent = `${opt.value}. ${opt.label}`;
             }
             
+            // Preselect if already answered
             if (userAnswers[q.id] === opt.value) {
               optDiv.classList.add('selected');
             }
@@ -1077,11 +1196,13 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
           respContainer.appendChild(div);
         }
         
+        // Mark button
         const isMarked = markedQuestions.includes(q.id);
         markBtn.innerHTML = `<i class="fas fa-flag"></i> ${
           isMarked ? translations[currentLang].unmark : translations[currentLang].mark
         }`;
         
+        // Next button text
         if (currentQuestionIndex === total - 1) {
           nextBtnText.textContent = isReviewMode ? 
             translations[currentLang].reviewComplete : 
@@ -1090,16 +1211,22 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
           nextBtnText.textContent = translations[currentLang].next;
         }
         
+        // Show/hide review button
         if (currentQuestionIndex === originalQuestions.length - 1 && markedQuestions.length > 0 && !isReviewMode) {
           reviewMarkedBtn.style.display = 'block';
           reviewMarkedBtn.textContent = translations[currentLang].reviewMarked;
         } else {
           reviewMarkedBtn.style.display = 'none';
         }
+        
+        // Update language
         updateLanguage();
         
+        // Start timer
         startTimer();
       }
+
+      // Whiteboard functions
       const canvas = document.getElementById('whiteboard-canvas');
       const ctx = canvas.getContext('2d');
       let isDrawing = false;
@@ -1167,6 +1294,8 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
           initCanvas(); 
         }
       }
+
+      // Save answer
       function saveAnswer(isManual = true) {
         const q = questions[currentQuestionIndex];
         let answer = null;
@@ -1179,8 +1308,11 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
           answer = ta? ta.value.trim(): null;
         }
         
+        // Only save if answer exists
         if (answer !== null) {
           userAnswers[q.id] = answer;
+          
+          // Calculate score
           const correct = answer && q.correctAnswer ? 
             (answer.toString().toLowerCase() === q.correctAnswer.toString().toLowerCase()) : 
             false;
@@ -1188,6 +1320,10 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
           if(correct) score++;
         }
       }
+
+      
+
+      // Navigation functions
       function goToNextQuestion() {
         clearTimer();
         const total = questions.length;
@@ -1196,6 +1332,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
           renderQuestion();
         } else {
           if (isReviewMode) {
+            // After finishing review, return to original questions
             resetToOriginalQuestions();
           } else {
             showResults();
@@ -1211,6 +1348,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
         }
       }
       
+      // Show results
       function showResults() {
         questionContainer.style.display = 'none';
         clearTimer();
@@ -1241,33 +1379,42 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
         container.appendChild(resDiv);
       }
 
+      // Review marked questions
       function reviewMarked() {
         if(!markedQuestions.length) {
           return;
         }
         
+        // Create a new set of questions from the marked ones
         const reviewQuestions = originalQuestions.filter(q => markedQuestions.includes(q.id));
         
         if (reviewQuestions.length === 0) {
           return;
         }
+        
+        // Replace the current questions with the review set
         questions.length = 0;
         Array.prototype.push.apply(questions, reviewQuestions);
         currentQuestionIndex = 0;
         isReviewMode = true;
         
+        // Now re-render the first question of the review set
         renderQuestion();
       }
       
+      // Reset to original questions after review
       function resetToOriginalQuestions() {
+        // Restore original questions
         questions.length = 0;
         Array.prototype.push.apply(questions, originalQuestions);
         currentQuestionIndex = 0;
         isReviewMode = false;
         
+        // Show notification and render first question
         renderQuestion();
       }
 
+      // Toggle question mark
       function toggleMark() {
         const q = questions[currentQuestionIndex];
         const idx = markedQuestions.indexOf(q.id);
@@ -1286,6 +1433,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
         }`;
       }
 
+      // Check if question is answered
       function isQuestionAnswered() {
         const q = questions[currentQuestionIndex];
         
@@ -1298,6 +1446,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
         return false;
       }
 
+      // Show skip confirmation
       function showSkipConfirmation() {
         skipMessage.textContent = translations[currentLang].confirmSkip;
         skipModal.style.display = 'flex';
@@ -1355,6 +1504,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
           saveAnswer(true);
           goToNextQuestion();
         } else {
+          // If question is already marked, skip without modal
           if (isMarked) {
             goToNextQuestion();
           } else {
@@ -1369,6 +1519,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       });
       
       markSkipBtn.addEventListener('click', () => {
+        // Mark the question
         const qId = questions[currentQuestionIndex].id;
         if (!markedQuestions.includes(qId)) {
           markedQuestions.push(qId);
@@ -1382,8 +1533,12 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       cancelSkipBtn.addEventListener('click', () => {
         skipModal.style.display = 'none';
       });
+
+      // Initialize
       setTool('pen'); 
       renderQuestion();
+      
+      // Add fadeOut animation
       const styleEl = document.createElement('style');
       styleEl.textContent = `@keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(20px); } }`;
       document.head.appendChild(styleEl);
