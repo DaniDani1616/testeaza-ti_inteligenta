@@ -6,9 +6,8 @@ $is_logged_in = false;
 
 if(isset($_SESSION['user_id'])) {
     $is_logged_in = true;
-// Conectare la baza de date
 $mysqli = require __DIR__ . '/database.php';
-// Obținere date utilizator (inclusiv profile_pic, theme)
+
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT Numereal, Prenume, Nume, email, profile_pic,age
       FROM registration
@@ -267,7 +266,7 @@ $stmt->close();
       transform: translateY(-2px);
       box-shadow: 0 3px 8px rgba(0,0,0,0.15);
     }
-    /* Language toggle */
+   
     .lang-toggle {
       position: fixed;
       bottom: 25px;
@@ -300,7 +299,7 @@ $stmt->close();
     .lang-btn:hover:not(.active) {
       background: rgba(255,255,255,0.15);
     }
-    /* Animations */
+ 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -308,7 +307,7 @@ $stmt->close();
     .card {
       animation: fadeIn 0.6s ease-out;
     }
-    /* Responsive adjustments */
+ 
     @media (max-width: 768px) {
       header {
         flex-direction: column;
@@ -356,7 +355,7 @@ $stmt->close();
     </div>
     <div>
       <?php if($is_logged_in): ?>
-        <!-- User menu for authenticated users -->
+       
         <a href="dashboard.php">
         <div id="user-info">
       <?php if (!empty($user['profile_pic'])): ?>
@@ -366,7 +365,7 @@ $stmt->close();
     </div>
     </a>
       <?php else: ?>
-        <!-- Buttons for guests -->
+     
         <div class="auth-buttons">
           <a href="login.php" class="auth-btn">Autentificare</a>
           <a href="index.html" class="auth-btn register-btn">Înregistrare</a>
@@ -402,7 +401,7 @@ $stmt->close();
     <button data-g1="#fc4a1a" data-g2="#f7b733" data-b1="#ff9d00" data-b2="#ffcc70">Auriu</button>
   </div>
   <script>
-    // Translations for Romanian and English
+  
     const translations = {
       ro: {
         login: "Autentificare",
@@ -426,7 +425,7 @@ $stmt->close();
     
     let currentLang = 'ro';
     
-    // Update interface based on language
+   
     function updateLanguage() {
       const loginBtn = document.querySelector('.auth-btn');
       if(loginBtn) {
@@ -441,7 +440,7 @@ $stmt->close();
       document.querySelector('.hero h1').textContent = translations[currentLang].heroTitle;
       document.querySelector('.hero p').textContent = translations[currentLang].heroText;
       
-      // Update dropdown menu items if user is logged in
+   
       const dropdownItems = document.querySelectorAll('.dropdown-item span');
       if(dropdownItems.length > 0) {
         dropdownItems[0].textContent = translations[currentLang].profile;
@@ -450,7 +449,7 @@ $stmt->close();
       }
     }
     
-    // Language buttons
+
     document.querySelectorAll('.lang-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
@@ -460,7 +459,6 @@ $stmt->close();
       });
     });
     
-    // Theme functionality
     const selector = document.getElementById('theme-selector');
     document.getElementById('theme-btn').addEventListener('click', () => {
       selector.style.display = selector.style.display === 'block' ? 'none' : 'block';
@@ -475,14 +473,14 @@ $stmt->close();
       selector.style.display = 'none';
     }));
     
-    // Card animation
+  
     document.querySelectorAll('.card').forEach(card => {
       card.addEventListener('click', () => {
         card.classList.toggle('revealed');
       });
     });
     
-    // User menu functionality
+ 
     document.addEventListener('DOMContentLoaded', function() {
       const userMenu = document.getElementById('user-menu');
       if(userMenu) {
@@ -492,7 +490,7 @@ $stmt->close();
           e.stopPropagation();
           const isActive = userMenu.classList.contains('active');
           
-          // Close all other dropdowns first
+       
           document.querySelectorAll('.user-menu.active').forEach(el => {
             if(el !== userMenu) {
               el.classList.remove('active');
@@ -500,12 +498,12 @@ $stmt->close();
             }
           });
           
-          // Toggle this dropdown
+        
           userMenu.classList.toggle('active');
           dropdownMenu.classList.toggle('active');
         });
         
-        // Close dropdown when clicking outside
+      
         document.addEventListener('click', function(e) {
           if(!userMenu.contains(e.target)) {
             userMenu.classList.remove('active');
@@ -513,14 +511,14 @@ $stmt->close();
           }
         });
         
-        // Prevent closing when clicking inside dropdown
+       
         dropdownMenu.addEventListener('click', function(e) {
           e.stopPropagation();
         });
       }
     });
     
-    // Initialize
+
     updateLanguage();
   </script>
 </body>
