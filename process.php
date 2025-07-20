@@ -2,36 +2,29 @@
 session_start();
 require 'config.php';
 
-// Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit;
 }
 
-// Initialize results
 $results = ['M' => 0, 'N' => 0, 'O' => 0];
 $msg = 'Nu faci parte dintr-o categorie, vizualizeaza informatii despre toate cele 3 categorii din care puteai face parte.';
 
-// Process test results if form was submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($_POST as $k => $v) {
         if (preg_match('/^q(\d+)$/', $k, $m)) {
             $question_id = $m[1];
             $score = (int)$v;
             $cat = $_POST['cat' . $question_id];
-
-            // Insert answer into database
             $stmt = $pdo->prepare("INSERT INTO answers (question_id, value) VALUES ( ?, ?)");
             $stmt->execute([$m[1],$score]);
 
-            // Count scores for categories
             if ($score >= 3) {
                 $results[$cat]++;
             }
         }
     }
 
-    // Determine result message
     if ($results['M'] > $results['N'] && $results['M'] > $results['O']) {
         $msg = 'Mizantrop';
     } elseif ($results['N'] > $results['M'] && $results['N'] > $results['O']) {
@@ -40,15 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $msg = 'Optimist';
     }
 
-    // Store results in session
     $_SESSION['test_results'] = [
       'message'       => $msg,
       'results'       => $results,
-      'dominantTypes' => getDominantTypes($results)  // apel direct
+      'dominantTypes' => getDominantTypes($results)  
   ];
 }
 
-// Function to determine dominant types
 function getDominantTypes($results) {
     $max = max($results);
     $dominant = [];
@@ -60,7 +51,6 @@ function getDominantTypes($results) {
     return $dominant;
 }
 $mysqli = require __DIR__ . '/database.php';
-// Get user data for display
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT Numereal, Prenume, Nume, email, profile_pic
         FROM registration
@@ -72,20 +62,17 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 $stmt->close();
 
-// Use test results from session if available
 if (isset($_SESSION['test_results'])) {
     $testResults = $_SESSION['test_results'];
     $message = $testResults['message'];
     $results = $testResults['results'];
     $dominantTypes = $testResults['dominantTypes'];
 } else {
-    // Default values if no test taken
     $message = 'Completează testul mai întâi';
     $results = ['M' => 0, 'N' => 0, 'O' => 0];
     $dominantTypes = [];
 }
 
-// Type information
 $typeInfo = [
     'M' => [
         'title' => 'Mizantropul',
