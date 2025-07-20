@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Înregistrare</title>
+  <style>
+    /* ==== Variabile CSS pentru teme și culori ==== */
+    :root {
+      --gradient-1: #4e54c8;
+      --gradient-2: #8f94fb;
+      --btn-grad-start: #a1ffce;
+      --btn-grad-end: #faffd1;
+      --card-bg: rgba(255,255,255,0.3);
+      --card-blur: 10px;
+      --text-color: #fff;
+      --btn-text: #333;
+      --card-border: rgba(255, 255, 255, 0.5);
+      --input-border: rgba(255, 255, 255, 0.7);
+      --input-focus-border: var(--btn-grad-start);
+      --error-color: #ff6b6b;
+    }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+      scroll-behavior: smooth;
+    }
+    body {
+      background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+      font-family: 'Segoe UI', 'Poppins', Tahoma, sans-serif;
+      display: flex;
+      flex-direction: column;
+      color: var(--text-color);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+    
+    /* ==== Container-ul principal de înregistrare ==== */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .register-box {
+      position: relative;
+      background: rgba(255,255,255,0.25);
+      backdrop-filter: blur(var(--card-blur));
+      border-radius: 25px;
+      padding: 30px 25px;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+      border: 1px solid var(--card-border);
+      color: var(--text-color);
+    }
+    .register-box h2 {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    /* ==== Stil pentru câmpurile cu etichete flotante ==== */
+    .user-box {
+      position: relative;
+      margin: 20px 0;
+    }
+    .user-box input,
+    .user-box select {
+      width: 100%;
+      padding: 10px 40px 10px 10px; /* spațiu pentru emoji toggle */
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid var(--input-border);
+      color: var(--text-color);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    .user-box input:focus,
+    .user-box select:focus {
+      border-bottom-color: var(--input-focus-border);
+    }
+    .user-box label {
+      position: absolute;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      pointer-events: none;
+      transition: 0.3s;
+      color: var(--text-color);
+      opacity: 0.8;
+    }
+    /* Când inputul are focus sau conține text, mutăm eticheta sus */
+    .user-box input:focus + label,
+    .user-box input:not(:placeholder-shown) + label,
+    .user-box select:focus + label,
+    .user-box select:not([value=""]) + label {
+      top: -8px;
+      font-size: 0.85rem;
+      opacity: 1;
+      color: var(--btn-grad-start);
+    }
+    /* Butonul de submit */
+    .register-box button[type="submit"] {
+      width: 100%;
+      margin-top: 15px;
+      padding: 12px;
+      background: linear-gradient(135deg, var(--btn-grad-start), var(--btn-grad-end));
+      border: none;
+      border-radius: 50px;
+      color: var(--btn-text);
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: all 0.3s;
+    }
+    .register-box button[type="submit"]:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+    }
+    /* Link către autentificare */
+    .register-box .login-redirect {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.9rem;
+    }
+    .register-box .login-redirect a {
+      color: var(--btn-grad-start);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+    .register-box .login-redirect a:hover {
+      color: var(--btn-grad-end);
+    }
+    /* Toggle vedere parolă cu emoji */
+    .toggle-password {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 1.2rem;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+    .toggle-password:hover {
+      opacity: 1;
+    }
+    /* Mesaje de eroare sub câmpuri */
+    .error-message {
+      color: var(--error-color);
+      font-size: 0.85rem;
+      margin-top: 5px;
+      display: none;
+    }
+    /* ==== Buton teme și selector teme ==== */
+    #theme-btn {
+      position: fixed;
+      bottom: 25px;
+      left: 25px;
+      width: 55px;
+      height: 55px;
+      background: linear-gradient(135deg, var(--btn-grad-start), var(--btn-grad-end));
+      border: none;
+      border-radius: 50%;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+      cursor: pointer;
+      color: var(--btn-text);
+      font-size: 22px;
+      z-index: 100;
+      transition: all 0.3s ease;
+    }
+    #theme-btn:hover {
+      transform: rotate(15deg) scale(1.1);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.25);
+    }
+    #theme-selector {
+      position: fixed;
+      bottom: 95px;
+      left: 25px;
+      background: rgba(255,255,255,0.95);
+      padding: 15px;
+      border-radius: 15px;
+      display: none;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      z-index: 100;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    #theme-selector button {
+      margin: 8px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    #theme-selector button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+    /* ==== Toggle limbă ==== */
+    .lang-toggle {
+      position: fixed;
+      bottom: 25px;
+      left: 100px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 50px;
+      padding: 6px;
+      display: flex;
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    .lang-btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 50px;
+      background: transparent;
+      color: var(--text-color);
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 0.95rem;
+    }
+    .lang-btn.active {
+      background: linear-gradient(135deg, var(--btn-grad-start), var(--btn-grad-end));
+      color: var(--btn-text);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+    .lang-btn:hover:not(.active) {
+      background: rgba(255,255,255,0.15);
+    }
+    /* ==== Responsive ==== */
+    @media (max-width: 480px) {
+      header {
+        padding: 10px 15px;
+        margin: 8px auto;
+      }
+      .register-box {
+        padding: 20px 15px;
+        margin: 0 10px;
+      }
+      .register-box h2 {
+        font-size: 1.6rem;
+      }
+      .user-box input,
+      .user-box select {
+        padding: 8px 35px 8px 8px;
+        font-size: 0.9rem;
+      }
+      .toggle-password {
+        font-size: 1rem;
+      }
+      #theme-btn {
+        width: 45px;
+        height: 45px;
+        bottom: 20px;
+        left: 20px;
+      }
+      #theme-selector {
+        left: 20px;
+        bottom: 80px;
+      }
+      .lang-toggle {
+        bottom: 20px;
+        left: 80px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Buton teme -->
+  <button id="theme-btn" title="Schimbă tema">🎨</button>
+  <div id="theme-selector">
+    <button data-g1="#4e54c8" data-g2="#8f94fb" data-b1="#a1ffce" data-b2="#faffd1">Albastru</button>
+    <button data-g1="#ff6a00" data-g2="#ee0979" data-b1="#ffe29f" data-b2="#ffa99f">Portocaliu</button>
+    <button data-g1="#11998e" data-g2="#38ef7d" data-b1="#e0c3fc" data-b2="#8ec5fc">Verde</button>
+    <button data-g1="#fc4a1a" data-g2="#f7b733" data-b1="#ff9d00" data-b2="#ffcc70">Auriu</button>
+  </div>
+
+ 
+  <main>
+    <div class="register-box">
+      <!-- Am adăugat id la h2 pentru traducere -->
+      <h2 id="register-title">Înregistrare</h2>
+      <form id="register-form" action="connect.php" method="post" novalidate>
+        <!-- Nume real (name="Numereal") -->
+        <div class="user-box">
+          <input type="text" id="field-nume" name="Numereal" placeholder=" " required/>
+          <!-- am adăugat id label -->
+          <label for="field-nume" id="label-nume">Nume</label>
+          <div class="error-message" id="error-nume"></div>
+        </div>
+        <!-- Prenume -->
+        <div class="user-box">
+          <input type="text" id="field-prenume" name="Prenume" placeholder=" " required/>
+          <label for="field-prenume" id="label-prenume">Prenume</label>
+          <div class="error-message" id="error-prenume"></div>
+        </div>
+        <!-- Username -->
+        <div class="user-box">
+          <input type="text" id="field-username" name="Nume" placeholder=" " required/>
+          <label for="field-username" id="label-username">Username</label>
+          <div class="error-message" id="error-username"></div>
+        </div>
+        <!-- Email -->
+        <div class="user-box">
+          <input type="email" id="field-email" name="email" placeholder=" " required/>
+          <label for="field-email" id="label-email">Email</label>
+          <div class="error-message" id="error-email"></div>
+        </div>
+        <!-- Parolă -->
+        <div class="user-box">
+          <input type="password" id="field-parola" name="Parola" placeholder=" " required/>
+          <label for="field-parola" id="label-parola">Parolă</label>
+          <!-- emoji toggle în loc de SVG -->
+          <span class="toggle-password" id="toggle-parola" title="Arată/ascunde parola">👁️</span>
+          <div class="error-message" id="error-parola"></div>
+        </div>
+        <!-- Confirmare Parolă -->
+        <div class="user-box">
+          <input type="password" id="field-cparola" name="CParola" placeholder=" " required/>
+          <label for="field-cparola" id="label-cparola">Confirmare Parolă</label>
+          <span class="toggle-password" id="toggle-cparola" title="Arată/ascunde parola">👁️</span>
+          <div class="error-message" id="error-cparola"></div>
+        </div>
+        <!-- Select Vârstă -->
+        <div class="user-box">
+          <select id="field-varsta" name="age" required>
+            <option value="" disabled selected hidden>-- Vârstă --</option>
+            <option value="10-14">10-14</option>
+            <option value="15-17">15-17</option>
+            <option value="18+">18+</option>
+          </select>
+          <label for="field-varsta" id="label-varsta">Vârstă</label>
+          <div class="error-message" id="error-varsta"></div>
+        </div>
+        <!-- Submit -->
+        <button type="submit" id="submit-btn">Înregistrează-te</button>
+        <div class="login-redirect">
+          <!-- adăugat id-uri pentru traducere -->
+          <span id="text-have-account">Ai deja cont?</span>
+          <a href="login.php" id="link-login-page">Autentificare</a>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // ==== Traducreri RO/EN pentru interfața de înregistrare ====
+    const translations = {
+      ro: {
+        registerTitle: "Înregistrare",
+        labels: {
+          nume: "Nume",
+          prenume: "Prenume",
+          username: "Username",
+          email: "Email",
+          parola: "Parolă",
+          cparola: "Confirmare Parolă",
+          varsta: "Vârstă",
+          agePlaceholder: "-- Vârstă --"
+        },
+        optionsVarsta: {
+          "": "-- Vârstă --",
+          "10-14": "10-14",
+          "15-17": "15-17",
+          "18+": "18+"
+        },
+        submitBtn: "Înregistrează-te",
+        haveAccountText: "Ai deja cont?",
+        loginLinkText: "Autentificare",
+        loginHeaderText: "Autentificare"
+      },
+      en: {
+        registerTitle: "Register",
+        labels: {
+          nume: "Last Name",
+          prenume: "First Name",
+          username: "Username",
+          email: "Email",
+          parola: "Password",
+          cparola: "Confirm Password",
+          varsta: "Age",
+          agePlaceholder: "-- Age --"
+        },
+        optionsVarsta: {
+          "": "-- Age --",
+          "10-14": "10-14",
+          "15-17": "15-17",
+          "18+": "18+"
+        },
+        submitBtn: "Register",
+        haveAccountText: "Already have an account?",
+        loginLinkText: "Login",
+        loginHeaderText: "Login"
+      }
+    };
+
+    let currentLang = 'ro';
+
+    // Elemente de interfață
+    const langBtns = document.querySelectorAll('.lang-btn');
+    const themeBtn = document.getElementById('theme-btn');
+    const themeSelector = document.getElementById('theme-selector');
+    const registerTitleEl = document.getElementById('register-title');
+    const labelNume = document.getElementById('label-nume');
+    const labelPrenume = document.getElementById('label-prenume');
+    const labelUsername = document.getElementById('label-username');
+    const labelEmail = document.getElementById('label-email');
+    const labelParola = document.getElementById('label-parola');
+    const labelCParola = document.getElementById('label-cparola');
+    const labelVarsta = document.getElementById('label-varsta');
+    const selectVarsta = document.getElementById('field-varsta');
+    const submitBtn = document.getElementById('submit-btn');
+    const textHaveAccount = document.getElementById('text-have-account');
+    const linkLoginPage = document.getElementById('link-login-page');
+    const loginBtnHeader = document.getElementById('login-btn-header');
+
+    // Funcție actualizare limbă
+    function updateLanguage() {
+      const t = translations[currentLang];
+      // Titlu pagină
+      if (registerTitleEl) registerTitleEl.textContent = t.registerTitle;
+      // Etichete
+      if (labelNume) labelNume.textContent = t.labels.nume;
+      if (labelPrenume) labelPrenume.textContent = t.labels.prenume;
+      if (labelUsername) labelUsername.textContent = t.labels.username;
+      if (labelEmail) labelEmail.textContent = t.labels.email;
+      if (labelParola) labelParola.textContent = t.labels.parola;
+      if (labelCParola) labelCParola.textContent = t.labels.cparola;
+      if (labelVarsta) labelVarsta.textContent = t.labels.varsta;
+      // Placeholder select varsta
+      if (selectVarsta) {
+        const opt = selectVarsta.querySelector('option[value=""]');
+        if (opt) opt.textContent = t.optionsVarsta[""];
+      }
+      // Buton submit
+      if (submitBtn) submitBtn.textContent = t.submitBtn;
+      // Text "Ai deja cont?"
+      if (textHaveAccount) textHaveAccount.textContent = t.haveAccountText;
+      if (linkLoginPage) linkLoginPage.textContent = t.loginLinkText;
+      // Header login
+      if (loginBtnHeader) loginBtnHeader.textContent = t.loginHeaderText;
+    }
+
+    // Eveniment click pentru toggle limbă
+    langBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        langBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentLang = btn.dataset.lang;
+        updateLanguage();
+      });
+    });
+
+    // ==== Funcționalitate toggle temă ==== 
+    themeBtn.addEventListener('click', () => {
+      themeSelector.style.display = themeSelector.style.display === 'block' ? 'none' : 'block';
+    });
+    themeSelector.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const g1 = btn.dataset.g1, g2 = btn.dataset.g2, b1 = btn.dataset.b1, b2 = btn.dataset.b2;
+        document.documentElement.style.setProperty('--gradient-1', g1);
+        document.documentElement.style.setProperty('--gradient-2', g2);
+        document.documentElement.style.setProperty('--btn-grad-start', b1);
+        document.documentElement.style.setProperty('--btn-grad-end', b2);
+        themeSelector.style.display = 'none';
+      });
+    });
+    // Ascundem selector la click în afara lui
+    document.addEventListener('click', (e) => {
+      if (!themeSelector.contains(e.target) && e.target !== themeBtn) {
+        themeSelector.style.display = 'none';
+      }
+    });
+
+    // ==== Toggle afișare/ascundere parolă cu emoji ==== 
+    function setupTogglePassword(toggleId, fieldId) {
+      const toggleEl = document.getElementById(toggleId);
+      const fieldEl = document.getElementById(fieldId);
+      if (!toggleEl || !fieldEl) return;
+      let visible = false;
+      toggleEl.addEventListener('click', () => {
+        visible = !visible;
+        fieldEl.type = visible ? 'text' : 'password';
+        // Poți schimba emoji dacă vrei, ex:
+        // toggleEl.textContent = visible ? '🙈' : '👁️';
+      });
+    }
+    setupTogglePassword('toggle-parola', 'field-parola');
+    setupTogglePassword('toggle-cparola', 'field-cparola');
+
+    // ==== Validare client-side la submit ==== 
+    const form = document.getElementById('register-form');
+    form.addEventListener('submit', function(e) {
+      // Resetăm mesajele de eroare
+      document.querySelectorAll('.error-message').forEach(el => {
+        el.textContent = '';
+        el.style.display = 'none';
+      });
+      let valid = true;
+      // Verificăm fiecăruia câmp dacă are valoare
+      const valNume = document.getElementById('field-nume').value.trim();
+      if (!valNume) {
+        const em = document.getElementById('error-nume');
+        em.textContent = (currentLang === 'ro' ? 'Introduceți numele.' : 'Please enter last name.');
+        em.style.display = 'block';
+        valid = false;
+      }
+      const valPrenume = document.getElementById('field-prenume').value.trim();
+      if (!valPrenume) {
+        const em = document.getElementById('error-prenume');
+        em.textContent = (currentLang === 'ro' ? 'Introduceți prenumele.' : 'Please enter first name.');
+        em.style.display = 'block';
+        valid = false;
+      }
+      const valUser = document.getElementById('field-username').value.trim();
+      if (!valUser) {
+        const em = document.getElementById('error-username');
+        em.textContent = (currentLang === 'ro' ? 'Introduceți username.' : 'Please enter username.');
+        em.style.display = 'block';
+        valid = false;
+      }
+      const valEmail = document.getElementById('field-email').value.trim();
+      if (!valEmail) {
+        const em = document.getElementById('error-email');
+        em.textContent = (currentLang === 'ro' ? 'Introduceți email.' : 'Please enter email.');
+        em.style.display = 'block';
+        valid = false;
+      } else {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!re.test(valEmail)) {
+          const em = document.getElementById('error-email');
+          em.textContent = (currentLang === 'ro' ? 'Format email invalid.' : 'Invalid email format.');
+          em.style.display = 'block';
+          valid = false;
+        }
+      }
+      const valParola = document.getElementById('field-parola').value;
+      if (!valParola) {
+        const em = document.getElementById('error-parola');
+        em.textContent = (currentLang === 'ro' ? 'Introduceți parola.' : 'Please enter password.');
+        em.style.display = 'block';
+        valid = false;
+      } else if (valParola.length < 6) {
+        const em = document.getElementById('error-parola');
+        em.textContent = (currentLang === 'ro' ? 'Parola trebuie să aibă cel puțin 6 caractere.' : 'Password must be at least 6 characters.');
+        em.style.display = 'block';
+        valid = false;
+      }
+      const valCParola = document.getElementById('field-cparola').value;
+      if (!valCParola) {
+        const em = document.getElementById('error-cparola');
+        em.textContent = (currentLang === 'ro' ? 'Confirmați parola.' : 'Please confirm password.');
+        em.style.display = 'block';
+        valid = false;
+      } else if (valParola && valParola !== valCParola) {
+        const em = document.getElementById('error-cparola');
+        em.textContent = (currentLang === 'ro' ? 'Parolele nu corespund.' : 'Passwords do not match.');
+        em.style.display = 'block';
+        valid = false;
+      }
+      const valVarsta = document.getElementById('field-varsta').value;
+      if (!valVarsta) {
+        const em = document.getElementById('error-varsta');
+        em.textContent = (currentLang === 'ro' ? 'Selectați vârsta.' : 'Please select age.');
+        em.style.display = 'block';
+        valid = false;
+      }
+      if (!valid) {
+        e.preventDefault(); // împiedicăm submit dacă invalid
+      }
+      // Dacă e valid, formularul se va trimite către connect.php prin metoda POST
+    });
+
+    // ==== Inițializare interfață ==== 
+    updateLanguage();
+  </script>
+</body>
+</html>
