@@ -1,679 +1,592 @@
-<?php
-session_start();
-if (isset($_SESSION['user_id'], $_SESSION['username'])) {
-    $user_id = $_SESSION['user_id'];
-    $username = $_SESSION['username'];
-} else {
-    header('Location: login.php');
-    exit;
-}
-$mysqli = require __DIR__ . '/database.php';
-$user_id = $_SESSION['user_id'];
-$sql = "SELECT Numereal, Prenume, Nume, email, profile_pic
-        FROM registration
-       WHERE id = ?";
-$stmt = $mysqli->prepare($sql);
-$stmt->bind_param('i', $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
-$stmt->close();
-
-$fullname = trim("{$user['Prenume']} {$user['Numereal']}");
-$questions = [
-    1 => ['text' => 'Mă simt foarte apropiat de ceilalți oameni;', 'category' => 'O'],
-    2 => ['text' => 'În adâncul sufletului sunt convins/ă că nu mi-se poate întâmpla nimic rău;', 'category' => 'N'],
-    3 => ['text' => 'Majoritatea oamenilor nu merită nici o atenție;', 'category' => 'M'],
-    4 => ['text' => 'Am încredere în toți oamenii;', 'category' => 'N'],
-    5 => ['text' => 'În cele din urmă trebuie să te bizui doar pe tine însuți;', 'category' => 'M'],
-    6 => ['text' => 'Trebuie doar să vrei ceva cu adevărat pentru ca să se poată realiza;', 'category' => 'N'],
-    7 => ['text' => 'Găsesc imediat plăcere în lucrul pe care îl fac;', 'category' => 'O'],
-    8 => ['text' => 'Nu am dușmani;', 'category' => 'N'],
-    9 => ['text' => 'Încrederea e bună, controlul și mai bun;', 'category' => 'M'],
-    10 => ['text' => 'În relațiile cu ceilalți sunt sincer/ă;', 'category' => 'O'],
-    11 => ['text' => 'Nu permit nimănui să fie prea apropiat față de mine;', 'category' => 'M'],
-    12 => ['text' => 'Nu mă gândesc la ziua de mâine;', 'category' => 'N'],
-    13 => ['text' => 'Trebuie să se cunoască mai întâi bine pe cineva, pentru a-i acorda încredere;', 'category' => 'M'],
-    14 => ['text' => 'Îmi dau seama imediat când cineva este rău intenționat;', 'category' => 'O'],
-    15 => ['text' => 'Chiar și atunci când oamenii fac ceva rău, nu înseamnă că sunt răi;', 'category' => 'N'],
-    16 => ['text' => 'Oricine poate fi cumpărat;', 'category' => 'M'],
-    17 => ['text' => 'După ploaie apare întotdeauna soarele;', 'category' => 'O'],
-    18 => ['text' => 'Oamenii s-ar înțelege bine unii cu alții, chiar și fără legi;', 'category' => 'N'],
-    19 => ['text' => 'Sunt convins/ă că și prietenii mă vorbesc de rău;', 'category' => 'M'],
-    20 => ['text' => 'Față de străini sunt nepărtinitor/nepărtinitoare;', 'category' => 'O'],
-    21 => ['text' => 'Pot suporta critica.', 'category' => 'O'],
-];
-
-$results = ['M' => 0, 'N' => 0, 'O' => 0];
-$message = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    foreach ($questions as $num => $q) {
-        $fieldName = 'q' . $num;
-        if (isset($_POST[$fieldName])) {
-            $val = intval($_POST[$fieldName]);
-            if ($val >= 3 && $val <= 4) {
-                $cat = $q['category'];
-                $results[$cat]++;
-            }
-        }
-    }
-
-    $M = $results['M'];
-    $N = $results['N'];
-    $O = $results['O'];
-
-    if ($M === 7 && $N < 7 && $O < 7) {
-        $message = 'Faci parte din tipul mizantropului';
-    } elseif ($N === 7 && $M < 7 && $O < 7) {
-        $message = 'Faci parte din tipul Naivului';
-    } elseif ($O === 7 && $M < 7 && $N < 7) {
-        $message = 'Faci parte din tipul Optimistului';
-    } elseif ($O === $M && $O > 0 && $M > 0 && $N < $O && $N < $M) {
-        $message = 'Faci parte din tipul Optimistului și din tipul mizantropului';
-    } elseif ($O === $N && $O > 0 && $N > 0 && $M < $O && $M < $N) {
-        $message = 'Faci parte din tipul Optimistului și din tipul Naivului';
-    } elseif ($M === $N && $M > 0 && $N > 0 && $O < $N && $O < $M) {
-        $message = 'Faci parte din tipul mizantropului și din tipul Naivului';
-    } else {
-        $message = 'Rezultatul nu s-a încadrat într-o categorie unică conform criteriilor.';
-    }
-
-    $maxScore = max($results['M'], $results['N'], $results['O']);
-    $dominantTypes = [];
-    if ($results['M'] === $maxScore) $dominantTypes[] = 'M';
-    if ($results['N'] === $maxScore) $dominantTypes[] = 'N';
-    if ($results['O'] === $maxScore) $dominantTypes[] = 'O';
-
-    $raspunsuri = [];
-    for ($i = 1; $i <= 21; $i++) {
-        $field = 'q' . $i;
-        $raspunsuri[$i] = isset($_POST[$field]) ? intval($_POST[$field]) : 0;
-    }
-
-    $dbHost = 'localhost';
-    $dbName = 'chestionar_db';
-    $dbUser = 'root';
-    $dbPass = '';
-
-    $mysqli = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
-    if ($mysqli->connect_errno) {
-        error_log("Eroare conectare MySQL: " . $mysqli->connect_error);
-    } else {
-        $columns = [];
-        $placeholders = [];
-        $types = '';
-        $values = [];
-
-        for ($i = 1; $i <= 21; $i++) {
-            $columns[] = 'q' . $i;
-            $placeholders[] = '?';
-            $types .= 'i';
-            $values[] = $raspunsuri[$i];
-        }
-        
-        $columns[] = 'user_id';
-        $placeholders[] = '?';
-        $types .= 'i';
-        $values[] = $_SESSION['user_id'];
-        
-        $columns[] = 'tip';
-        $placeholders[] = '?';
-        $types .= 's';
-        $values[] = $message;
-
-        $cols_str = implode(',', $columns);
-        $ph_str = implode(',', $placeholders);
-        $sql = "INSERT INTO `formular_raspunsuri` ($cols_str) VALUES ($ph_str)";
-        $stmt = $mysqli->prepare($sql);
-        
-        if ($stmt) {
-            $bind_names = [];
-            $bind_names[] = $types;
-            foreach ($values as $idx => $val) {
-                $bind_names[] = &$values[$idx];
-            }
-            call_user_func_array([$stmt, 'bind_param'], $bind_names);
-            $stmt->execute();
-            $stmt->close();
-        }
-        $mysqli->close();
-    }
-
-    $_SESSION['test_results'] = [
-        'message' => $message,
-        'results' => $results,
-        'dominantTypes' => $dominantTypes
-    ];
-
-    header('Location: results.php');
-    exit;
-}
-?>
 <!DOCTYPE html>
 <html lang="ro">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chestionar "Gândire în mod pozitiv"</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Înregistrare</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    
+   
     :root {
       --gradient-1: #4e54c8;
       --gradient-2: #8f94fb;
       --btn-grad-start: #a1ffce;
       --btn-grad-end: #faffd1;
-      --primary-accent: #ff9d00;
+      --card-bg: rgba(255,255,255,0.3);
+      --card-blur: 10px;
       --text-color: #fff;
       --btn-text: #333;
-      --card-bg: rgba(255, 255, 255, 0.2);
-      --card-border: rgba(255, 255, 255, 0.3);
-      --form-bg: rgba(255, 255, 255, 0.1);
+      --card-border: rgba(255, 255, 255, 0.5);
+      --input-border: rgba(255, 255, 255, 0.7);
+      --input-focus-border: var(--btn-grad-start);
+      --error-color: #ff6b6b;
     }
-    
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      height: 100%;
+      scroll-behavior: smooth;
+    }
     body {
       background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+      font-family: 'Segoe UI', 'Poppins', Tahoma, sans-serif;
+      display: flex;
+      flex-direction: column;
       color: var(--text-color);
-      min-height: 100vh;
-      padding: 20px;
-      position: relative;
       overflow-x: hidden;
       line-height: 1.6;
     }
     
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    
-    /* Header */
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 15px 30px;
-      background: var(--card-bg);
-      border-radius: 16px;
-      margin-bottom: 20px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      border: 1px solid var(--card-border);
-      animation: fadeIn 0.6s ease-out;
-    }
-    #user-info {
-      display:flex; align-items:center; gap:10px;
-      background: rgba(255,255,255,0.7); color:#333;
-      padding:10px 20px; border-radius:50px; font-weight:600;
-    }
-    #user-info img {
-      width:48px; height:48px; border-radius:50%; object-fit:cover;
-      border:2px solid white;
-    }
-    .nav-icons {
-      display: flex;
-      gap: 15px;
-    }
-    
-    .nav-icons a, .nav-icons button {
-      background: rgba(255,255,255,0.3);
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
+   
+    main {
+      flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.3s ease;
-      text-decoration: none;
+      padding: 20px;
+    }
+    .register-box {
+      position: relative;
+      background: rgba(255,255,255,0.25);
+      backdrop-filter: blur(var(--card-blur));
+      border-radius: 25px;
+      padding: 30px 25px;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+      border: 1px solid var(--card-border);
       color: var(--text-color);
-      border: none;
-      cursor: pointer;
-      font-size: 18px;
     }
-    
-    .nav-icons a:hover, .nav-icons button:hover {
-      transform: translateY(-3px);
-      background: rgba(255,255,255,0.4);
-      box-shadow:  Ț0 5px 15px rgba(0,0,0,0.1);
-    }
-    
-    /* Conținut principal */
-    .content {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-    
-    .question-container {
-      background: var(--card-bg);
-      backdrop-filter: blur(12px);
-      border-radius: 20px;
-      padding: 30px;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-      border: 1px solid var(--card-border);
-      animation: slideUp 0.5s ease-out;
-      position: relative;
-    }
-    
-    .question-container h2 {
-      margin-bottom: 10px;
-      border-bottom: 2px solid rgba(255,255,255,0.3);
-      padding-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .question-container h2 i {
-      color: var(--primary-accent);
-    }
-    
-    /* Progress bar */
-    .progress-container {
-      width: 100%;
-      background: rgba(255,255,255,0.3);
-      height: 8px;
-      border-radius: 4px;
-      overflow: hidden;
-      margin-bottom: 20px;
-    }
-    .progress-bar {
-      width: 100%;
-      height: 100%;
-      background: var(--primary-accent);
-    }
-    
-    /* Form styling */
-    .form-container {
-      background: var(--form-bg);
-      border-radius: 16px;
-      padding: 25px;
-      backdrop-filter: blur(5px);
-      margin-top: 20px;
-    }
-    
-    .question-item {
-      margin-bottom: 2rem;
-      padding-bottom: 1.5rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .question-item:last-child {
-      border-bottom: none;
-      margin-bottom: 0;
-      padding-bottom: 0;
-    }
-    
-    .question-text {
-      font-size: 18px;
-      margin-bottom: 15px;
-      font-weight: 500;
-    }
-    
-    .options {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-    }
-    
-    .option {
-      background: rgba(255,255,255,0.2);
-      padding: 15px;
-      border-radius: 15px;
-      cursor: pointer;
-      transition: all 0.3s;
+    .register-box h2 {
       text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      font-size: 2rem;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .user-box {
       position: relative;
-      overflow: hidden;
+      margin: 20px 0;
     }
-    
-    .option:hover {
-      background: rgba(255,255,255,0.3);
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    .user-box input,
+    .user-box select {
+      width: 100%;
+      padding: 10px 40px 10px 10px; 
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid var(--input-border);
+      color: var(--text-color);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.3s;
     }
-    
-    .option input[type="radio"] {
+    .user-box input:focus,
+    .user-box select:focus {
+      border-bottom-color: var(--input-focus-border);
+    }
+    .user-box label {
       position: absolute;
-      opacity: 0;
-      width: 0;
-      height: 0;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      pointer-events: none;
+      transition: 0.3s;
+      color: var(--text-color);
+      opacity: 0.8;
     }
-    
-    .option.selected {
-      background: rgba(255, 157, 0, 0.4);
-      border: 2px solid var(--primary-accent);
-      transform: scale(1.05);
+  
+    .user-box input:focus + label,
+    .user-box input:not(:placeholder-shown) + label,
+    .user-box select:focus + label,
+    .user-box select:not([value=""]) + label {
+      top: -8px;
+      font-size: 0.85rem;
+      opacity: 1;
+      color: var(--btn-grad-start);
     }
-    
-    .option-label {
-      margin-top: 10px;
-      font-weight: 600;
-      font-size: 16px;
-    }
-    
-    /* Butoane de control */
-    .controls {
-      display: flex;
-      justify-content: center;
-      margin-top: 25px;
-      gap: 15px;
-      flex-wrap: wrap;
-    }
-    
-    .btn {
-      padding: 15px 30px;
+ 
+    .register-box button[type="submit"] {
+      width: 100%;
+      margin-top: 15px;
+      padding: 12px;
       background: linear-gradient(135deg, var(--btn-grad-start), var(--btn-grad-end));
       border: none;
       border-radius: 50px;
       color: var(--btn-text);
       font-weight: bold;
+      font-size: 1rem;
       cursor: pointer;
-      font-size: 17px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
       transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      min-width: 200px;
     }
-    
-    .btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    .register-box button[type="submit"]:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.25);
     }
-    
-    .btn:active {
-      transform: translateY(1px);
+   
+    .register-box .login-redirect {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.9rem;
     }
-    
-    /* Butoane flotante */
-    .floating-controls {
+    .register-box .login-redirect a {
+      color: var(--btn-grad-start);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s;
+    }
+    .register-box .login-redirect a:hover {
+      color: var(--btn-grad-end);
+    }
+  
+    .toggle-password {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 1.2rem;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+    .toggle-password:hover {
+      opacity: 1;
+    }
+   
+    .error-message {
+      color: var(--error-color);
+      font-size: 0.85rem;
+      margin-top: 5px;
+      display: none;
+    }
+   
+    #theme-btn {
       position: fixed;
       bottom: 25px;
       left: 25px;
-      display: flex;
-      gap: 15px;
-      z-index: 100;
-    }
-    
-    .theme-btn, .lang-btn {
-      width: 60px;
-      height: 60px;
+      width: 55px;
+      height: 55px;
       background: linear-gradient(135deg, var(--btn-grad-start), var(--btn-grad-end));
       border: none;
       border-radius: 50%;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      box-shadow: 0 5px 10px rgba(0,0,0,0.2);
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
       color: var(--btn-text);
+      font-size: 22px;
+      z-index: 100;
       transition: all 0.3s ease;
     }
-    
-    .theme-btn:hover, .lang-btn:hover {
+    #theme-btn:hover {
       transform: rotate(15deg) scale(1.1);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 15px rgba(0,0,0,0.25);
     }
-    
     #theme-selector {
       position: fixed;
-      bottom: 100px;
+      bottom: 95px;
       left: 25px;
       background: rgba(255,255,255,0.95);
       padding: 15px;
       border-radius: 15px;
       display: none;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
       z-index: 100;
       border: 1px solid rgba(0,0,0,0.1);
-      animation: fadeIn 0.3s ease-out;
     }
-    
     #theme-selector button {
       margin: 8px;
-      padding: 10px 18px;
+      padding: 10px 15px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 0.95rem;
       font-weight: 600;
       transition: all 0.2s;
     }
-    
     #theme-selector button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+      transform: translateY(-2px);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
     }
-    
-    /* Animations */
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+   
+    .lang-toggle {
+      position: fixed;
+      bottom: 25px;
+      left: 100px;
+      background: rgba(255,255,255,0.25);
+      border-radius: 50px;
+      padding: 6px;
+      display: flex;
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.3);
     }
-    
-    @keyframes slideUp {
-      from { 
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to { 
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .lang-btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 50px;
+      background: transparent;
+      color: var(--text-color);
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 0.95rem;
     }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
+    .lang-btn.active {
+      background: linear-gradient(135deg, var(--btn-grad-start), var(--btn-grad-end));
+      color: var(--btn-text);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+    .lang-btn:hover:not(.active) {
+      background: rgba(255,255,255,0.15);
+    }
+    /* ==== Responsive ==== */
+    @media (max-width: 480px) {
       header {
-        padding: 12px 20px;
-        flex-wrap: wrap;
-        gap: 10px;
+        padding: 10px 15px;
+        margin: 8px auto;
       }
-      
-      .question-container {
-        padding: 20px;
+      .register-box {
+        padding: 20px 15px;
+        margin: 0 10px;
       }
-      
-      .progress-container {
-        margin-bottom: 15px;
+      .register-box h2 {
+        font-size: 1.6rem;
       }
-      
-      .options {
-        grid-template-columns: 1fr;
+      .user-box input,
+      .user-box select {
+        padding: 8px 35px 8px 8px;
+        font-size: 0.9rem;
       }
-      
-      .btn {
-        min-width: 100%;
+      .toggle-password {
+        font-size: 1rem;
       }
-      
-      .floating-controls {
-        flex-direction: column;
+      #theme-btn {
+        width: 45px;
+        height: 45px;
         bottom: 20px;
         left: 20px;
       }
-      
       #theme-selector {
-        bottom: 150px;
+        left: 20px;
+        bottom: 80px;
+      }
+      .lang-toggle {
+        bottom: 20px;
+        left: 80px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="nav-icons">
-        <a href="home.php" title="Acasă"><i class="fas fa-home"></i></a>
-      </div>
-      
-      <a href="dashboard.php">
-    <div id="user-info">
-      <?php if (!empty($user['profile_pic'])): ?>
-        <img src="<?= htmlspecialchars($user['profile_pic']) ?>" alt="Avatar">
-      <?php endif; ?>
-      <span>@<?= htmlspecialchars($user['Nume']) ?></span>
-    </div>
-    </a>
-    </header>
-    
-    <div class="content">
-      <div class="question-container">
-        <h2><i class="fas fa-question-circle"></i> Chestionar: "Gândire în mod pozitiv?"</h2>
-        <div class="progress-container">
-          <div class="progress-bar"></div>
-        </div>
-        
-        <p>Vă rugăm să răspundeți la următoarele întrebări selectând opțiunea care vă descrie cel mai bine.</p>
-        
-        <form method="post" action="" class="form-container">
-          <?php foreach ($questions as $num => $q): ?>
-            <div class="question-item">
-              <div class="question-text">
-                <strong>Întrebarea <?= $num ?>:</strong> <?= htmlspecialchars($q['text']) ?>
-              </div>
-              <div class="options">
-                <label class="option">
-                  <input type="radio" name="q<?= $num ?>" value="1" required>
-                  <div class="option-label">Nu corespunde</div>
-                </label>
-                <label class="option">
-                  <input type="radio" name="q<?= $num ?>" value="2">
-                  <div class="option-label">Corespunde uneori</div>
-                </label>
-                <label class="option">
-                  <input type="radio" name="q<?= $num ?>" value="3">
-                  <div class="option-label">Corespunde deseori</div>
-                </label>
-                <label class="option">
-                  <input type="radio" name="q<?= $num ?>" value="4">
-                  <div class="option-label">Corespunde pe deplin</div>
-                </label>
-              </div>
-            </div>
-          <?php endforeach; ?>
-          
-          <div class="controls">
-            <button type="submit" class="btn">
-              <i class="fas fa-paper-plane"></i> Trimite răspunsurile
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-  
-  <div class="floating-controls">
-    <button class="theme-btn" id="theme-btn">🎨</button>
-  </div>
-  
+
+
+  <button id="theme-btn" title="Schimbă tema">🎨</button>
   <div id="theme-selector">
     <button data-g1="#4e54c8" data-g2="#8f94fb" data-b1="#a1ffce" data-b2="#faffd1">Albastru</button>
     <button data-g1="#ff6a00" data-g2="#ee0979" data-b1="#ffe29f" data-b2="#ffa99f">Portocaliu</button>
     <button data-g1="#11998e" data-g2="#38ef7d" data-b1="#e0c3fc" data-b2="#8ec5fc">Verde</button>
     <button data-g1="#fc4a1a" data-g2="#f7b733" data-b1="#ff9d00" data-b2="#ffcc70">Auriu</button>
   </div>
-  
+
+ 
+  <main>
+    <div class="register-box">
+    
+      <h2 id="register-title">Înregistrare</h2>
+      <form id="register-form" action="connect.php" method="post" novalidate>
+      
+        <div class="user-box">
+          <input type="text" id="field-nume" name="Numereal" placeholder=" " required/>
+        
+          <label for="field-nume" id="label-nume">Nume</label>
+          <div class="error-message" id="error-nume"></div>
+        </div>
+     
+        <div class="user-box">
+          <input type="text" id="field-prenume" name="Prenume" placeholder=" " required/>
+          <label for="field-prenume" id="label-prenume">Prenume</label>
+          <div class="error-message" id="error-prenume"></div>
+        </div>
+      
+        <div class="user-box">
+          <input type="text" id="field-username" name="Nume" placeholder=" " required/>
+          <label for="field-username" id="label-username">Username</label>
+          <div class="error-message" id="error-username"></div>
+        </div>
+    
+        <div class="user-box">
+          <input type="email" id="field-email" name="email" placeholder=" " required/>
+          <label for="field-email" id="label-email">Email</label>
+          <div class="error-message" id="error-email"></div>
+        </div>
+     
+        <div class="user-box">
+          <input type="password" id="field-parola" name="Parola" placeholder=" " required/>
+          <label for="field-parola" id="label-parola">Parolă</label>
+       
+          <span class="toggle-password" id="toggle-parola" title="Arată/ascunde parola">👁️</span>
+          <div class="error-message" id="error-parola"></div>
+        </div>
+      
+        <div class="user-box">
+          <input type="password" id="field-cparola" name="CParola" placeholder=" " required/>
+          <label for="field-cparola" id="label-cparola">Confirmare Parolă</label>
+          <span class="toggle-password" id="toggle-cparola" title="Arată/ascunde parola">👁️</span>
+          <div class="error-message" id="error-cparola"></div>
+        </div>
+       
+        <div class="user-box">
+          <select id="field-varsta" name="age" required>
+            <option value="" disabled selected hidden>-- Vârstă --</option>
+            <option value="10-14">10-14</option>
+            <option value="15-17">15-17</option>
+            <option value="18+">18+</option>
+          </select>
+          <label for="field-varsta" id="label-varsta">Vârstă</label>
+          <div class="error-message" id="error-varsta"></div>
+        </div>
+       
+        <button type="submit" id="submit-btn">Înregistrează-te</button>
+        <div class="login-redirect">
+        
+          <span id="text-have-account">Ai deja cont?</span>
+          <a href="login.php" id="link-login-page">Autentificare</a>
+        </div>
+      </form>
+    </div>
+  </main>
+
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const options = document.querySelectorAll('.option');
-      options.forEach(option => {
-        const radio = option.querySelector('input[type="radio"]');
-        radio.addEventListener('change', function() {
-          const parentOptions = option.closest('.options');
-          parentOptions.querySelectorAll('.option').forEach(opt => {
-            opt.classList.remove('selected');
-          });
-          
-          if (radio.checked) {
-            option.classList.add('selected');
-          }
-        });
+  
+    const translations = {
+      ro: {
+        registerTitle: "Înregistrare",
+        labels: {
+          nume: "Nume",
+          prenume: "Prenume",
+          username: "Username",
+          email: "Email",
+          parola: "Parolă",
+          cparola: "Confirmare Parolă",
+          varsta: "Vârstă",
+          agePlaceholder: "-- Vârstă --"
+        },
+        optionsVarsta: {
+          "": "-- Vârstă --",
+          "10-14": "10-14",
+          "15-17": "15-17",
+          "18+": "18+"
+        },
+        submitBtn: "Înregistrează-te",
+        haveAccountText: "Ai deja cont?",
+        loginLinkText: "Autentificare",
+        loginHeaderText: "Autentificare"
+      },
+      en: {
+        registerTitle: "Register",
+        labels: {
+          nume: "Last Name",
+          prenume: "First Name",
+          username: "Username",
+          email: "Email",
+          parola: "Password",
+          cparola: "Confirm Password",
+          varsta: "Age",
+          agePlaceholder: "-- Age --"
+        },
+        optionsVarsta: {
+          "": "-- Age --",
+          "10-14": "10-14",
+          "15-17": "15-17",
+          "18+": "18+"
+        },
+        submitBtn: "Register",
+        haveAccountText: "Already have an account?",
+        loginLinkText: "Login",
+        loginHeaderText: "Login"
+      }
+    };
+
+    let currentLang = 'ro';
+
+
+    const langBtns = document.querySelectorAll('.lang-btn');
+    const themeBtn = document.getElementById('theme-btn');
+    const themeSelector = document.getElementById('theme-selector');
+    const registerTitleEl = document.getElementById('register-title');
+    const labelNume = document.getElementById('label-nume');
+    const labelPrenume = document.getElementById('label-prenume');
+    const labelUsername = document.getElementById('label-username');
+    const labelEmail = document.getElementById('label-email');
+    const labelParola = document.getElementById('label-parola');
+    const labelCParola = document.getElementById('label-cparola');
+    const labelVarsta = document.getElementById('label-varsta');
+    const selectVarsta = document.getElementById('field-varsta');
+    const submitBtn = document.getElementById('submit-btn');
+    const textHaveAccount = document.getElementById('text-have-account');
+    const linkLoginPage = document.getElementById('link-login-page');
+    const loginBtnHeader = document.getElementById('login-btn-header');
+
+
+    function updateLanguage() {
+      const t = translations[currentLang];
+     
+      if (registerTitleEl) registerTitleEl.textContent = t.registerTitle;
+   
+      if (labelNume) labelNume.textContent = t.labels.nume;
+      if (labelPrenume) labelPrenume.textContent = t.labels.prenume;
+      if (labelUsername) labelUsername.textContent = t.labels.username;
+      if (labelEmail) labelEmail.textContent = t.labels.email;
+      if (labelParola) labelParola.textContent = t.labels.parola;
+      if (labelCParola) labelCParola.textContent = t.labels.cparola;
+      if (labelVarsta) labelVarsta.textContent = t.labels.varsta;
+  
+      if (selectVarsta) {
+        const opt = selectVarsta.querySelector('option[value=""]');
+        if (opt) opt.textContent = t.optionsVarsta[""];
+      }
+ 
+      if (submitBtn) submitBtn.textContent = t.submitBtn;
+  
+      if (textHaveAccount) textHaveAccount.textContent = t.haveAccountText;
+      if (linkLoginPage) linkLoginPage.textContent = t.loginLinkText;
+    
+      if (loginBtnHeader) loginBtnHeader.textContent = t.loginHeaderText;
+    }
+
+   
+    langBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        langBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentLang = btn.dataset.lang;
+        updateLanguage();
       });
-      
-      const themeBtn = document.getElementById('theme-btn');
-      const themeSelector = document.getElementById('theme-selector');
-      
-      themeBtn.addEventListener('click', function() {
-        themeSelector.style.display = themeSelector.style.display === 'block' ? 'none' : 'block';
+    });
+
+ 
+    themeBtn.addEventListener('click', () => {
+      themeSelector.style.display = themeSelector.style.display === 'block' ? 'none' : 'block';
+    });
+    themeSelector.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const g1 = btn.dataset.g1, g2 = btn.dataset.g2, b1 = btn.dataset.b1, b2 = btn.dataset.b2;
+        document.documentElement.style.setProperty('--gradient-1', g1);
+        document.documentElement.style.setProperty('--gradient-2', g2);
+        document.documentElement.style.setProperty('--btn-grad-start', b1);
+        document.documentElement.style.setProperty('--btn-grad-end', b2);
+        themeSelector.style.display = 'none';
       });
+    });
+   
+    document.addEventListener('click', (e) => {
+      if (!themeSelector.contains(e.target) && e.target !== themeBtn) {
+        themeSelector.style.display = 'none';
+      }
+    });
+
+  
+    function setupTogglePassword(toggleId, fieldId) {
+      const toggleEl = document.getElementById(toggleId);
+      const fieldEl = document.getElementById(fieldId);
+      if (!toggleEl || !fieldEl) return;
+      let visible = false;
+      toggleEl.addEventListener('click', () => {
+        visible = !visible;
+        fieldEl.type = visible ? 'text' : 'password';
       
-      themeSelector.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const g1 = this.dataset.g1;
-          const g2 = this.dataset.g2;
-          const b1 = this.dataset.b1;
-          const b2 = this.dataset.b2;
-          
-          document.documentElement.style.setProperty('--gradient-1', g1);
-          document.documentElement.style.setProperty('--gradient-2', g2);
-          document.documentElement.style.setProperty('--btn-grad-start', b1);
-          document.documentElement.style.setProperty('--btn-grad-end', b2);
-          
-          themeSelector.style.display = 'none';
-          showNotification('Temă schimbată!');
-        });
       });
-      
-      const langBtn = document.getElementById('lang-btn');
-      let currentLang = 'ro';
-      
-      langBtn.addEventListener('click', function() {
-        currentLang = currentLang === 'ro' ? 'en' : 'ro';
-        const langText = currentLang === 'ro' ? 'Limba schimbată în Română' : 'Language changed to English';
-        showNotification(langText);
+    }
+    setupTogglePassword('toggle-parola', 'field-parola');
+    setupTogglePassword('toggle-cparola', 'field-cparola');
+
+
+    const form = document.getElementById('register-form');
+    form.addEventListener('submit', function(e) {
+   
+      document.querySelectorAll('.error-message').forEach(el => {
+        el.textContent = '';
+        el.style.display = 'none';
       });
-      
-      function showNotification(message) {
-        const notification = document.createElement('div');
-        notification.textContent = message;
-        notification.style.position = 'fixed';
-        notification.style.bottom = '100px';
-        notification.style.right = '20px';
-        notification.style.padding = '15px 25px';
-        notification.style.background = 'linear-gradient(135deg, #00b09b, #96c93d)';
-        notification.style.color = 'white';
-        notification.style.borderRadius = '50px';
-        notification.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
-        notification.style.zIndex = '1000';
-        notification.style.animation = 'fadeIn 0.3s, slideUp 0.5s';
-        
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-          notification.style.animation = 'fadeOut 0.5s';
-          setTimeout(() => {
-            document.body.removeChild(notification);
-          }, 500);
-        }, 3000);
+      let valid = true;
+    
+      const valNume = document.getElementById('field-nume').value.trim();
+      if (!valNume) {
+        const em = document.getElementById('error-nume');
+        em.textContent = (currentLang === 'ro' ? 'Introduceți numele.' : 'Please enter last name.');
+        em.style.display = 'block';
+        valid = false;
+      }
+      const valPrenume = document.getElementById('field-prenume').value.trim();
+      if (!valPrenume) {
+        const em = document.getElementById('error-prenume');
+        em.textContent = (currentLang === 'ro' ? 'Introduceți prenumele.' : 'Please enter first name.');
+        em.style.display = 'block';
+        valid = false;
+      }
+      const valUser = document.getElementById('field-username').value.trim();
+      if (!valUser) {
+        const em = document.getElementById('error-username');
+        em.textContent = (currentLang === 'ro' ? 'Introduceți username.' : 'Please enter username.');
+        em.style.display = 'block';
+        valid = false;
+      }
+      const valEmail = document.getElementById('field-email').value.trim();
+      if (!valEmail) {
+        const em = document.getElementById('error-email');
+        em.textContent = (currentLang === 'ro' ? 'Introduceți email.' : 'Please enter email.');
+        em.style.display = 'block';
+        valid = false;
+      } else {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!re.test(valEmail)) {
+          const em = document.getElementById('error-email');
+          em.textContent = (currentLang === 'ro' ? 'Format email invalid.' : 'Invalid email format.');
+          em.style.display = 'block';
+          valid = false;
+        }
+      }
+      const valParola = document.getElementById('field-parola').value;
+      if (!valParola) {
+        const em = document.getElementById('error-parola');
+        em.textContent = (currentLang === 'ro' ? 'Introduceți parola.' : 'Please enter password.');
+        em.style.display = 'block';
+        valid = false;
+      } else if (valParola.length < 6) {
+        const em = document.getElementById('error-parola');
+        em.textContent = (currentLang === 'ro' ? 'Parola trebuie să aibă cel puțin 6 caractere.' : 'Password must be at least 6 characters.');
+        em.style.display = 'block';
+        valid = false;
+      }
+      const valCParola = document.getElementById('field-cparola').value;
+      if (!valCParola) {
+        const em = document.getElementById('error-cparola');
+        em.textContent = (currentLang === 'ro' ? 'Confirmați parola.' : 'Please confirm password.');
+        em.style.display = 'block';
+        valid = false;
+      } else if (valParola && valParola !== valCParola) {
+        const em = document.getElementById('error-cparola');
+        em.textContent = (currentLang === 'ro' ? 'Parolele nu corespund.' : 'Passwords do not match.');
+        em.style.display = 'block';
+        valid = false;
+      }
+      const valVarsta = document.getElementById('field-varsta').value;
+      if (!valVarsta) {
+        const em = document.getElementById('error-varsta');
+        em.textContent = (currentLang === 'ro' ? 'Selectați vârsta.' : 'Please select age.');
+        em.style.display = 'block';
+        valid = false;
+      }
+      if (!valid) {
+        e.preventDefault(); 
       }
       
-      const styleEl = document.createElement('style');
-      styleEl.textContent = `
-        @keyframes fadeOut {
-          from { opacity: 1; transform: translateY(0); }
-          to { opacity: 0; transform: translateY(20px); }
-        }
-      `;
-      document.head.appendChild(styleEl);
-      
-      document.body.style.opacity = 0;
-      setTimeout(() => {
-        document.body.style.transition = 'opacity 0.5s ease-in';
-        document.body.style.opacity = 1;
-      }, 100);
     });
+
+ 
+    updateLanguage();
   </script>
 </body>
 </html>
