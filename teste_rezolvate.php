@@ -9,9 +9,7 @@ if (empty($_SESSION['user_id'])) {
   exit;
 }
 
-// Conectare la baza de date
 $mysqli = require __DIR__ . '/database.php';
-// Obținere date utilizator (inclusiv profile_pic, theme)
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT Numereal, Prenume, Nume, email, profile_pic,age
       FROM registration
@@ -28,10 +26,7 @@ if($user['age']=="15-17")
   $X="15-17";
 if($user['age']=="18+")
   $X="18+";
-// Nume complet
 $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
-
-// Tema curentă
 $theme = $user['theme'] ?? 'default';
 $test_message     = '';
 $test_results     = [];
@@ -78,8 +73,6 @@ if (isset($_SESSION['test_results'])) {
   $test_message   = $_SESSION['test_results']['message'];
   $test_results   = $_SESSION['test_results']['results'];
   $test_dominants = $_SESSION['test_results']['dominantTypes'];
-  // Dacă nu vrei să mai rămână în sesiune
-  // unset($_SESSION['test_results']);
 }
 ?>
 <!DOCTYPE html>
@@ -123,7 +116,7 @@ if (isset($_SESSION['test_results'])) {
       padding-left: 20px;
     }
     .has-submenu.active .submenu {
-      max-height: 500px; /* suficient cât să arate toate elementele */
+      max-height: 500px; 
     }
     .menu-arrow {
       margin-left: auto;
@@ -132,8 +125,6 @@ if (isset($_SESSION['test_results'])) {
     .has-submenu.active .menu-arrow i {
       transform: rotate(180deg);
     } 
-
-    /* Header */
     header {
       display: flex; 
       align-items: center; 
@@ -189,7 +180,6 @@ if (isset($_SESSION['test_results'])) {
     main {
       display:flex; flex:1; overflow:hidden;
     }
-    /* Sidebar */
     .sidebar {
       width: var(--sidebar-width); background: var(--sidebar-bg);
       backdrop-filter: blur(10px); padding:20px 0; height:100%;
@@ -236,8 +226,6 @@ if (isset($_SESSION['test_results'])) {
     .has-submenu.active .submenu { max-height:500px; }
     .menu-arrow { margin-left:auto; transition:transform .3s; }
     .has-submenu.active .menu-arrow { transform:rotate(180deg); }
-
-    /* Content */
     .content {
       flex: 1; 
       padding: 30px; 
@@ -383,8 +371,6 @@ if (isset($_SESSION['test_results'])) {
       transform: translateY(-2px);
       box-shadow: 0 3px 8px rgba(0,0,0,0.15);
     }
-    
-    /* Language toggle */
     .lang-toggle {
       position: fixed;
       bottom: 25px;
@@ -417,8 +403,6 @@ if (isset($_SESSION['test_results'])) {
     .lang-btn:hover:not(.active) {
       background: rgba(255,255,255,0.15);
     }
-    
-    /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
@@ -426,8 +410,6 @@ if (isset($_SESSION['test_results'])) {
     .card {
       animation: fadeIn 0.6s ease-out;
     }
-    
-    /* Responsive adjustments */
     @media (max-width: 768px) {
       header {
         flex-direction: column;
@@ -444,8 +426,6 @@ if (isset($_SESSION['test_results'])) {
         font-size: 2rem;
       }
     }
-    
-    /* Start test button */
     .auth-btn {
       display: inline-block;
       margin-top: 20px;
@@ -468,8 +448,6 @@ if (isset($_SESSION['test_results'])) {
     .auth-btn i {
       margin-right: 10px;
     }
-    
-    /* Hero section */
     .hero {
       text-align: center;
       padding: 40px 20px;
@@ -489,8 +467,6 @@ if (isset($_SESSION['test_results'])) {
       margin-bottom: 30px;
       line-height: 1.6;
     }
-    
-    /* Mobile menu */
     .mobile-menu-btn {
       display: none;
       position: fixed;
@@ -553,7 +529,6 @@ if (isset($_SESSION['test_results'])) {
 <div id="flash-message3">Îmi pare rău, testul este disponibil doar celor peste 18 ani.</div>
 </head>
 <body>
-<!-- Mobile menu toggle -->
 <button class="mobile-menu-btn" id="mobileMenuBtn">
     <i class="fas fa-bars"></i>
 </button>
@@ -703,10 +678,8 @@ if (isset($_SESSION['test_results'])) {
 
     if (link) {
       link.addEventListener('click', e => {
-        e.preventDefault();            // oprește navigarea
-        flash.style.display = 'block'; // afișează mesajul
-
-        // după 3 secunde, ascunde mesajul
+        e.preventDefault();            
+        flash.style.display = 'block';
         setTimeout(() => {
           flash.style.display = 'none';
         }, 3000);
@@ -719,17 +692,14 @@ if (isset($_SESSION['test_results'])) {
 
     if (link) {
       link.addEventListener('click', e => {
-        e.preventDefault();            // oprește navigarea
-        flash.style.display = 'block'; // afișează mesajul
-
-        // după 3 secunde, ascunde mesajul
+        e.preventDefault();           
+        flash.style.display = 'block'; 
         setTimeout(() => {
           flash.style.display = 'none';
         }, 3000);
       });
     }
   });
-    // Theme selector
     const themeBtn = document.getElementById('theme-btn'),
           themeSel = document.getElementById('theme-selector');
     themeBtn.addEventListener('click', () => {
@@ -749,16 +719,12 @@ if (isset($_SESSION['test_results'])) {
             themeSel.style.display = 'none';
         }
     });
-
-    // Language toggle
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
         });
     });
-
-    // Mobile menu
     const mobileBtn = document.getElementById('mobileMenuBtn'),
           sidebar = document.getElementById('sidebar');
     mobileBtn.addEventListener('click', () => sidebar.classList.toggle('active'));
@@ -769,8 +735,6 @@ if (isset($_SESSION['test_results'])) {
             }
         }
     });
-
-    // Submenu Tests
     const testsSubmenu = document.getElementById('tests-submenu');
     testsSubmenu.querySelector('.main-test-link').addEventListener('click', e => {
         e.preventDefault();
