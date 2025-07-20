@@ -1,16 +1,13 @@
 <?php 
 session_start();
-// Dacă utilizatorul este deja logat, redirecționăm spre dashboard.php
 if (isset($_SESSION['user_id'])) {
     header('Location: dashboard.php');
     exit;
 }
 
 $error = '';
-// Preluăm și ștergem flash-ul (astfel apare o singură dată)
 $flash = $_SESSION['flash_success'] ?? null;
 unset($_SESSION['flash_success']);
-// Procesăm formularul doar la POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input    = trim($_POST['identifier'] ?? '');
     $password = $_POST['Parola'] ?? '';
@@ -297,7 +294,6 @@ if (isset($_GET['account_deleted'])) {
   </style>
 </head>
 <body>
-  <!-- Temă -->
   <button id="theme-btn" title="Schimbă tema">🎨</button>
   <div id="theme-selector">
     <button data-g1="#4e54c8" data-g2="#8f94fb" data-b1="#a1ffce" data-b2="#faffd1">Albastru</button>
@@ -343,18 +339,13 @@ if (isset($_GET['account_deleted'])) {
   <script>
     
     (function(){
-      // Cât timp să stea mesajul (ms)
       const DURATION = 3000;
-      // Luăm elementul, dacă există
       const msg = document.getElementById('flash-message');
       if (!msg) return;
-
-      // Forțăm aplicarea stilurilor inițiale
       requestAnimationFrame(() => {
         msg.classList.add('show');
       });
 
-      // După cei DURATION milisecunde, îl ascundem și apoi îl scoatem
       setTimeout(() => {
         msg.classList.remove('show');
         setTimeout(() => msg.remove(), 300);
@@ -415,8 +406,6 @@ if (isset($_GET['account_deleted'])) {
       });
     });
     updateLang();
-
-    // Tema toggle
     const themeBtn = document.getElementById('theme-btn');
     const themeSelector = document.getElementById('theme-selector');
     themeBtn.addEventListener('click',()=> {
@@ -436,7 +425,6 @@ if (isset($_GET['account_deleted'])) {
         themeSelector.style.display='none';
     });
 
-    // Emoji toggle parolă
     let pwdVis = false;
     document.getElementById('toggle-parola').addEventListener('click',()=>{
       pwdVis = !pwdVis;
@@ -444,7 +432,6 @@ if (isset($_GET['account_deleted'])) {
       f.type = pwdVis ? 'text':'password';
     });
 
-    // Validare client-side
     document.getElementById('login-form').addEventListener('submit', e=>{
       document.querySelectorAll('.error-message').forEach(el=>el.style.display='none');
       let valid = true;
