@@ -5,14 +5,12 @@ if (empty($_SESSION['user_id'])) {
     exit;
 }
 
-// Conectare la baza de date
 $mysqli = require __DIR__ . '/database.php';
 
-// Prelucrare flash message
 $flash = $_SESSION['flash_welcome'] ?? null;
 unset($_SESSION['flash_welcome']);
 
-// Obținere date utilizator (inclusiv profile_pic, theme)
+
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT Numereal, Prenume, Nume, email, profile_pic,age
         FROM registration
@@ -29,7 +27,7 @@ if($user['age']=="15-17")
   $X="15-17";
 if($user['age']=="18+")
   $X="18+";
-// Nume complet
+
 $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
 
 ?>
@@ -41,7 +39,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
   <title>Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* ==== Variabile CSS pentru teme ==== */
+    
     :root {
       --gradient-1: #4e54c8;
       --gradient-2: #8f94fb;
@@ -66,7 +64,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       display: flex;
       flex-direction: column;
     }
-    /* Flash message */
+   
     #flash-message {
       position: fixed; top:20px; left:50%; transform:translateX(-50%);
       background:#e6ffed; color:#2e7d32;
@@ -83,7 +81,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       padding-left: 20px;
     }
     .has-submenu.active .submenu {
-      max-height: 500px; /* suficient cât să arate toate elementele */
+      max-height: 500px; 
     }
     .menu-arrow {
       margin-left: auto;
@@ -93,7 +91,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       transform: rotate(180deg);
     } 
 
-    /* Header */
+    
     header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 15px 30px; margin: 20px;
@@ -124,7 +122,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
     main {
       display:flex; flex:1; overflow:hidden;
     }
-    /* Sidebar */
+   
     .sidebar {
       width: var(--sidebar-width); background: var(--sidebar-bg);
       backdrop-filter: blur(10px); padding:20px 0; height:100%;
@@ -172,7 +170,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
     .menu-arrow { margin-left:auto; transition:transform .3s; }
     .has-submenu.active .menu-arrow { transform:rotate(180deg); }
 
-    /* Content */
+    
     .content {
       flex:1; padding:30px; overflow-y:auto;
     }
@@ -226,7 +224,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       width:75%;
     }
 
-    /* Mobile menu */
+    
     .mobile-menu-btn {
       display: none;
       position: fixed;
@@ -258,16 +256,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       }
     }
 
-    /* Chatbot & theme/lang */
-    .chatbot {
-      position:fixed; bottom:25px; right:25px; width:60px;height:60px;
-      background:linear-gradient(135deg,var(--btn-grad-start),var(--btn-grad-end));
-      border-radius:50%; display:flex;align-items:center;justify-content:center;
-      font-size:28px;color:#333; box-shadow:0 5px 15px rgba(0,0,0,0.3);
-      cursor:pointer; z-index:100; transition:all .3s;
-    }
-    .chatbot:hover { transform:scale(1.1) rotate(5deg); }
-
+    
     #theme-btn {
       position:fixed; bottom:25px; left:25px; width:55px; height:55px;
       background:linear-gradient(135deg,var(--btn-grad-start),var(--btn-grad-end));
@@ -356,7 +345,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
     <div id="flash-message"><?= htmlspecialchars($flash) ?></div>
   <?php endif; ?>
 
- <!-- Mobile menu toggle -->
+
 <button class="mobile-menu-btn" id="mobileMenuBtn">
     <i class="fas fa-bars"></i>
 </button>
@@ -469,7 +458,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
   <div class="card">
   <div class="card-header">
     <div class="card-icon">
-      <i class="fas fa-brain"></i>  <!-- iconiță de creier -->
+      <i class="fas fa-brain"></i>  
     </div>
     <h2 class="card-title">Bine ai venit!</h2>
   </div>
@@ -490,7 +479,6 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
     <button data-g1="#fc4a1a" data-g2="#f7b733" data-b1="#ff9d00" data-b2="#ffcc70">Gold</button>
   </div>
   <script>
-    // Flash
     (function(){
       const msg = document.getElementById('flash-message');
       if (!msg) return;
@@ -503,10 +491,9 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
 
     if (link) {
       link.addEventListener('click', e => {
-        e.preventDefault();            // oprește navigarea
-        flash.style.display = 'block'; // afișează mesajul
+        e.preventDefault();            
+        flash.style.display = 'block'; 
 
-        // după 3 secunde, ascunde mesajul
         setTimeout(() => {
           flash.style.display = 'none';
         }, 3000);
@@ -519,17 +506,16 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
 
     if (link) {
       link.addEventListener('click', e => {
-        e.preventDefault();            // oprește navigarea
-        flash.style.display = 'block'; // afișează mesajul
+        e.preventDefault();           
+        flash.style.display = 'block'; 
 
-        // după 3 secunde, ascunde mesajul
         setTimeout(() => {
           flash.style.display = 'none';
         }, 3000);
       });
     }
   });
-    // Theme selector
+
     const themeBtn = document.getElementById('theme-btn');
     const themeSel = document.getElementById('theme-selector');
     
@@ -554,7 +540,6 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       }
     });
     
-    // Language toggle
     const translations = {
       ro: {
         welcome: "Bun venit în",
@@ -613,29 +598,27 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
     };
     
     function updateLanguage(lang) {
-      // Actualizează titlurile principale
+    
       document.querySelector('.content-title').textContent = 
         `${translations[lang].welcome} ${translations[lang].dashboard}`;
       document.querySelector('.content-subtitle').textContent = translations[lang].manage;
       
-      // Actualizează cardurile
+     
       const cardTitles = document.querySelectorAll('.card-title');
       cardTitles[0].textContent = translations[lang].profile;
       cardTitles[1].textContent = translations[lang].stats;
       cardTitles[2].textContent = translations[lang].notifications;
       cardTitles[3].textContent = translations[lang].activity;
       
-      // Actualizează statistici
+   
       const statLabels = document.querySelectorAll('.stat-label');
       statLabels[0].textContent = translations[lang].projects;
       statLabels[1].textContent = translations[lang].completed;
       statLabels[2].textContent = translations[lang].inProgress;
-      
-      // Actualizează progres lunar
+    
       const progressText = document.querySelector('.progress-bar').previousElementSibling;
       progressText.querySelector('span:first-child').textContent = translations[lang].monthly;
       
-      // Actualizează meniul sidebar
       document.querySelectorAll('.menu-title').forEach((title, index) => {
         if (index === 0) title.textContent = translations[lang].navigation;
         if (index === 1) title.textContent = translations[lang].actions;
@@ -650,8 +633,6 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       menuItems[4].textContent = translations[lang].solvedTests;
       menuItems[5].textContent = translations[lang].settings;
       menuItems[6].textContent = translations[lang].logout;
-      
-      // Actualizează tabel
       const tableHeaders = document.querySelectorAll('table th');
       if (tableHeaders.length > 0) {
         tableHeaders[0].textContent = translations[lang].action;
@@ -660,8 +641,6 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
         tableHeaders[3].textContent = translations[lang].status;
       }
     }
-    
-    // Inițializare limbă
     document.querySelectorAll('.lang-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
@@ -669,8 +648,6 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
         updateLanguage(btn.dataset.lang);
       });
     });
-    
-    // Mobile menu
     const mobileBtn = document.getElementById('mobileMenuBtn'),
           sidebar = document.getElementById('sidebar');
     mobileBtn.addEventListener('click', () => sidebar.classList.toggle('active'));
@@ -681,8 +658,6 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
             }
         }
     });
-    
-    // Submenu Tests
     const testsSubmenu = document.getElementById('tests-submenu');
     if (testsSubmenu) {
       testsSubmenu.querySelector('.main-test-link').addEventListener('click', e => {
