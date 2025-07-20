@@ -5,10 +5,8 @@ if (empty($_SESSION['user_id'])) {
     exit;
 }
 
-// Conectare la baza de date
 $mysqli = require __DIR__ . '/database.php';
 
-// Obținere date utilizator (inclusiv profile_pic, theme)
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT Numereal, Prenume, Nume, email, profile_pic
         FROM registration
@@ -20,7 +18,6 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 $stmt->close();
 
-// Nume complet
 $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
 ?>
 <!DOCTYPE html>
@@ -826,8 +823,6 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       <p><strong>Notă:</strong> Acesta este un test de orientare și nu înlocuiește o evaluare psihologică completă.</p>
     </div>
   </div>
-  
-  <!-- Buton teme -->
   <button id="theme-btn" title="Schimbă tema">🎨</button>
   <div id="theme-selector">
     <button data-g1="#4361ee" data-g2="#3f37c9" data-b1="#a1ffce" data-b2="#faffd1">Albastru</button>
@@ -837,9 +832,7 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
   </div>
 
   <script>
-    // Intrebări revizuite bazate pe standarde WISC reale
     const questions = [
-      // VCI - Înțelegere Verbală
       {
         question: "Ce înseamnă cuvântul 'generos'?",
         options: ["zgârcit", "dăruitor", "egoist", "avaros"],
@@ -876,7 +869,6 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
         timeLimit: 15
       },
       
-      // PRI - Raționament Perceptiv
       {
         question: "Care formă completează șirul logic?",
         svg: `
@@ -978,7 +970,6 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
         timeLimit: 25
       },
       
-      // WMI - Memorie de Lucru
       {
         question: "Ține minte: 4, 7, 2. Repetă invers.",
         options: ["2, 7, 4", "4, 7, 2", "7, 4, 2", "2, 4, 7"],
@@ -1015,7 +1006,6 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
         timeLimit: 20
       },
       
-      // PSI - Viteză de Procesare
       {
         question: "Găsește cifra 5 cât mai repede: 3 5 7 9",
         options: ["3", "5", "7", "9"],
@@ -1060,7 +1050,6 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
     let timeLeft;
     let startTime;
 
-    // Elemente DOM
     const introSection = document.getElementById('intro');
     const quizSection = document.getElementById('quiz');
     const resultSection = document.getElementById('result');
@@ -1079,10 +1068,8 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
     const themeBtn = document.getElementById('theme-btn');
     const themeSelector = document.getElementById('theme-selector');
 
-    // Butonul de start
     startBtn.addEventListener('click', startQuiz);
     
-    // Modal
     infoBtn.addEventListener('click', () => {
       infoModal.style.display = 'flex';
     });
@@ -1107,18 +1094,15 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       clearInterval(timer);
       const q = questions[currentQuestion];
       
-      // Actualizare întrebare
       questionElement.textContent = q.question;
       currentElement.textContent = currentQuestion + 1;
       scaleIndicator.textContent = q.scale;
       
-      // Actualizare imagine (dacă există)
       imageContainer.innerHTML = '';
       if (q.svg) {
         imageContainer.innerHTML = q.svg;
       }
       
-      // Actualizare opțiuni
       optionsContainer.innerHTML = '';
       q.options.forEach(option => {
         const button = document.createElement('button');
@@ -1128,12 +1112,10 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
         optionsContainer.appendChild(button);
       });
       
-      // Actualizare progres
       const progress = ((currentQuestion) / questions.length) * 100;
       progressBar.style.width = `${progress}%`;
       progressPercent.textContent = `${Math.round(progress)}%`;
       
-      // Pornire timer
       startTime = new Date();
       startTimer(q.timeLimit);
     }
@@ -1161,16 +1143,12 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       clearInterval(timer);
       const q = questions[currentQuestion];
       const endTime = new Date();
-      const timeTaken = (endTime - startTime) / 1000; // în secunde
-      
-      // Calcul bonus de timp (max 0.5 puncte pentru răspuns rapid)
+      const timeTaken = (endTime - startTime) / 1000; 
       let timeBonusValue = 0;
       if (selected === q.answer && timeTaken < q.timeLimit) {
-        // Bonus proporțional cu timpul rămas (max 0.5 puncte)
         timeBonusValue = Math.min(0.5, (1 - timeTaken / q.timeLimit) * 0.5);
       }
       
-      // Marcare răspuns corect/incorect
       if (selected !== null) {
         const options = optionsContainer.querySelectorAll('.option-btn');
         options.forEach(opt => {
@@ -1182,13 +1160,11 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
         });
       }
       
-      // Actualizare scor
       if (selected === q.answer) {
         scores[q.scale] += 1 + timeBonusValue;
         timeBonus[q.scale] += timeBonusValue;
       }
       
-      // Trecem la următoarea întrebare după o scurtă întârziere
       setTimeout(() => {
         currentQuestion++;
         if (currentQuestion < questions.length) {
@@ -1203,14 +1179,11 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       quizSection.classList.remove('active');
       resultSection.classList.add('active');
       
-      // Calcul scor total
       const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
       const iq = Math.floor(100 + totalScore * 1.3);
       
-      // Actualizare scor IQ
       document.querySelector('.iq-score').textContent = iq;
       
-      // Actualizare descriere IQ
       let description = "";
       if (iq >= 130) {
         description = "Excelent! Scorul tău se încadrează în categoria superioară. Ai demonstrat abilități excepționale de raționament și rezolvare de probleme.";
@@ -1223,14 +1196,12 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       }
       document.querySelector('.iq-description').textContent = description;
       
-      // Actualizare scoruri pe subscare
       const scaleElements = document.querySelectorAll('.scale-result');
       scaleElements[0].querySelector('.scale-score').textContent = scores.VCI.toFixed(1);
       scaleElements[1].querySelector('.scale-score').textContent = scores.PRI.toFixed(1);
       scaleElements[2].querySelector('.scale-score').textContent = scores.WMI.toFixed(1);
       scaleElements[3].querySelector('.scale-score').textContent = scores.PSI.toFixed(1);
       
-      // Găsim punctele forte
       const maxScore = Math.max(...Object.values(scores));
       const strengths = [];
       if (scores.VCI === maxScore) strengths.push("VCI (Înțelegere Verbală)");
@@ -1238,7 +1209,6 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       if (scores.WMI === maxScore) strengths.push("WMI (Memorie de Lucru)");
       if (scores.PSI === maxScore) strengths.push("PSI (Viteză de Procesare)");
       
-      // Actualizare interpretare
       const interpretationElement = document.querySelector('.interpretation p');
       if (strengths.length > 0) {
         interpretationElement.innerHTML = `Rezultatele indică un potențial intelectual ridicat, cu puncte forte deosebite în domeniul <strong>${strengths.join('</strong> și <strong>')}</strong>. `;
@@ -1249,7 +1219,6 @@ $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
       interpretationElement.innerHTML += `Scorul total se încadrează în categoria ${iq >= 130 ? "superioară" : iq >= 115 ? "superioară" : iq >= 85 ? "medie" : "sub medie"}, indicând o capacitate ${iq >= 115 ? "excelentă" : "bună"} de învățare și rezolvare de probleme.`;
     }
     
-    // Funcționalitatea butonului de teme
     themeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       themeSelector.style.display = themeSelector.style.display === 'block' ? 'none' : 'block';
