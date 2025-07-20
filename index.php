@@ -91,10 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $raspunsuri[$i] = isset($_POST[$field]) ? intval($_POST[$field]) : 0;
     }
 
-    $dbHost = 'localhost';
-    $dbName = 'chestionar_db';
-    $dbUser = 'root';
-    $dbPass = '';
+    $dbHost = 'sql206.infinityfree.com	';
+    $dbName = 'if0_39518451_chestionar_db';
+    $dbUser = 'if0_39518451';
+    $dbPass = 'Dani2008Fotbal';
 
     $mysqli = new mysqli($dbHost, $dbUser, $dbPass, $dbName);
     if ($mysqli->connect_errno) {
