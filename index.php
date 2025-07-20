@@ -8,7 +8,6 @@ if (isset($_SESSION['user_id'], $_SESSION['username'])) {
     exit;
 }
 $mysqli = require __DIR__ . '/database.php';
-// Obținere date utilizator (inclusiv profile_pic, theme)
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT Numereal, Prenume, Nume, email, profile_pic
         FROM registration
@@ -20,9 +19,7 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 $stmt->close();
 
-// Nume complet
 $fullname = trim("{$user['Prenume']} {$user['Numereal']}");
-// Definim întrebările și categoria fiecăreia (M, N sau O)
 $questions = [
     1 => ['text' => 'Mă simt foarte apropiat de ceilalți oameni;', 'category' => 'O'],
     2 => ['text' => 'În adâncul sufletului sunt convins/ă că nu mi-se poate întâmpla nimic rău;', 'category' => 'N'],
@@ -51,7 +48,6 @@ $results = ['M' => 0, 'N' => 0, 'O' => 0];
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Calculăm scorurile pentru fiecare categorie
     foreach ($questions as $num => $q) {
         $fieldName = 'q' . $num;
         if (isset($_POST[$fieldName])) {
@@ -63,7 +59,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Determinăm mesajul în funcție de scoruri
     $M = $results['M'];
     $N = $results['N'];
     $O = $results['O'];
@@ -84,21 +79,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = 'Rezultatul nu s-a încadrat într-o categorie unică conform criteriilor.';
     }
 
-    // Determinăm tipurile dominante
     $maxScore = max($results['M'], $results['N'], $results['O']);
     $dominantTypes = [];
     if ($results['M'] === $maxScore) $dominantTypes[] = 'M';
     if ($results['N'] === $maxScore) $dominantTypes[] = 'N';
     if ($results['O'] === $maxScore) $dominantTypes[] = 'O';
 
-    // Colectăm răspunsurile
     $raspunsuri = [];
     for ($i = 1; $i <= 21; $i++) {
         $field = 'q' . $i;
         $raspunsuri[$i] = isset($_POST[$field]) ? intval($_POST[$field]) : 0;
     }
 
-    // Salvăm în baza de date
     $dbHost = 'localhost';
     $dbName = 'chestionar_db';
     $dbUser = 'root';
@@ -148,14 +140,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mysqli->close();
     }
 
-    // Salvăm rezultatele în sesiune pentru redirecționare
     $_SESSION['test_results'] = [
         'message' => $message,
         'results' => $results,
         'dominantTypes' => $dominantTypes
     ];
 
-    // Redirecționăm către pagina de rezultate
     header('Location: results.php');
     exit;
 }
@@ -584,7 +574,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </div>
   
-  <!-- Butoane flotante -->
   <div class="floating-controls">
     <button class="theme-btn" id="theme-btn">🎨</button>
   </div>
@@ -598,7 +587,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Adaugă interacțiune la opțiuni
       const options = document.querySelectorAll('.option');
       options.forEach(option => {
         const radio = option.querySelector('input[type="radio"]');
@@ -614,7 +602,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
       });
       
-      // Funcționalitate pentru teme
       const themeBtn = document.getElementById('theme-btn');
       const themeSelector = document.getElementById('theme-selector');
       
@@ -639,7 +626,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
       });
       
-      // Funcționalitate pentru limbi
       const langBtn = document.getElementById('lang-btn');
       let currentLang = 'ro';
       
@@ -649,7 +635,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         showNotification(langText);
       });
       
-      // Funcție pentru notificări
       function showNotification(message) {
         const notification = document.createElement('div');
         notification.textContent = message;
@@ -674,7 +659,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }, 3000);
       }
       
-      // Adaugă keyframes pentru fadeOut
       const styleEl = document.createElement('style');
       styleEl.textContent = `
         @keyframes fadeOut {
@@ -684,7 +668,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       `;
       document.head.appendChild(styleEl);
       
-      // Animație la încărcare
       document.body.style.opacity = 0;
       setTimeout(() => {
         document.body.style.transition = 'opacity 0.5s ease-in';
