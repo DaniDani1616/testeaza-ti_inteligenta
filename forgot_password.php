@@ -1,25 +1,24 @@
 <?php
-// forgot_password.php
+
 
 session_start();
 
-// 1) Conectare la baza de date
+
 $mysqli = require __DIR__ . '/database.php';
 
 $error   = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 2) Preluăm și validăm email-ul
+ 
     $email = trim($_POST['email'] ?? '');
     if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Te rog introdu un e-mail valid.';
     } else {
-        // 3) Generăm token-ul și data expirării (1 oră)
-        $token   = bin2hex(random_bytes(16)); // 32 caractere hex
+      
+        $token   = bin2hex(random_bytes(16)); 
         $expires = date('Y-m-d H:i:s', time() + 3600);
 
-        // 4) Salvăm token și expirare în BD
         $stmt = $mysqli->prepare("
             UPDATE registration
             SET reset_token   = ?,
@@ -33,13 +32,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute();
             $stmt->close();
 
-            // 5) Construim link-ul de reset
+          
             $protocol   = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
             $host       = $_SERVER['HTTP_HOST'];
             $base       = rtrim(dirname($_SERVER['REQUEST_URI']), '/\\');
             $resetLink  = "{$protocol}://{$host}{$base}/reset_password.php?token={$token}";
 
-            // 6) **Fallback**: afișăm link-ul direct pe ecran (pentru testare locală)
+           
             $success = "Link-ul de resetare (valabil până la <strong>{$expires}</strong>) este:<br>"
                      . "<a href=\"{$resetLink}\">{$resetLink}</a>";
         }
@@ -78,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       overflow-x: hidden;
       line-height:1.6;
     }
-    /* Stil pentru mesaj flash */
+ 
     #flash-message {
       position: fixed;
       top: 20px;
@@ -99,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     #flash-message.show {
       opacity: 1;
     }
-    /* Limbă și temă toggle */
+   
     .lang-toggle {
       position: fixed;
       bottom: 25px;
@@ -179,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       box-shadow: 0 3px 8px rgba(0,0,0,0.15);
     }
 
-    /* Container login */
+  
     .box {
       margin:auto; background: rgba(255,255,255,0.25);
       backdrop-filter: blur(var(--card-blur));
@@ -265,7 +264,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </style>
 </head>
 <body>
-  <!-- Temă -->
+ 
   <button id="theme-btn" title="Schimbă tema">🎨</button>
   <div id="theme-selector">
     <button data-g1="#4e54c8" data-g2="#8f94fb" data-b1="#a1ffce" data-b2="#faffd1">Albastru</button>
@@ -307,7 +306,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </div>
 
   <script>
-    // Translations for forgot password page
+   
     const translations = {
       ro: {
         forgotTitle: "Ai uitat parola?",
@@ -349,7 +348,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     updateLang();
 
-    // Theme toggle
+   
     const themeBtn = document.getElementById('theme-btn');
     const themeSelector = document.getElementById('theme-selector');
     
